@@ -15,4 +15,4 @@ close $writer;  # send EOF
 
 my $entry_id = <$reader>;
 waitpid $pid, 0;
-print $entry_id;
+print $entry_id if $entry_id;
