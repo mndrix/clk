@@ -55,14 +55,15 @@ while ( my $timeline = readdir($dir) ) {
 }
 closedir $dir;
 
-# there are no candidate timelines, so atomically create one
-# TODO need to lock the timeline that we plan to create
-require File::Temp;
-my ($fh, $filename) = File::Temp::tempfile();
-print {$fh} "$entry_time $entry_id\n";
-print "$entry_id\n";
-close $fh;
-rename $filename, "$timelines_dir/$entry_time";
+# there are no candidate timelines, so create one (safely)
+lock_file "$timelines_dir/$entry_time", sub {
+    my ($fh, $filename) = tempfile();
+    print {$fh} "$entry_time $entry_id\n";
+    close $fh;
+    rename $filename, $_[0];
+    print "$entry_id\n";
+    return;
+};
 
 ################# helper subroutines ###################
 
