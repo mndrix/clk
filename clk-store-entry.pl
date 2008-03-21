@@ -12,9 +12,16 @@ my $entry = do { local $/; <STDIN> };
 my $entry_time = extract_entry_time(\$entry)
     or die "No valid time in the entry\n";
 
-# calculate the entry ID
+# store the entry itself before linking it into the timeline
 my $entry_id = calculate_entry_id(\$entry);
-# TODO store the entry under the root
+mkdir "$root/entries" if not -e "$root/entries";
+my $hash = substr $entry_id, 0, 2;
+my $rest = substr $entry_id, 2;
+mkdir "$root/entries/$hash" if not -e "$root/entries/$hash";
+open my $entry_fh, '>', "$root/entries/$hash/$rest"
+    or die "Could not store entry in $root/entries/$hash/$rest: $!\n";
+print {$entry_fh} $entry;
+close $entry_fh;
 
 # look through each timeline for one that can hold this entry
 my $timelines_dir = "$root/timelines";
@@ -48,6 +55,7 @@ while ( my $timeline = readdir($dir) ) {
 closedir $dir;
 
 # there are no candidate timelines, so atomically create one
+# TODO need to lock the timeline that we plan to create
 require File::Temp;
 my ($fh, $filename) = File::Temp::tempfile();
 print {$fh} "$entry_time $entry_id\n";
