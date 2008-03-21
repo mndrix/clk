@@ -25,6 +25,7 @@ close $entry_fh;
 
 # look through each timeline for one that can hold this entry
 my $timelines_dir = "$root/timelines";
+mkdir $timelines_dir if not -e $timelines_dir;
 opendir my $dir, $timelines_dir
     or die "Cannot open $timelines_dir\n";
 TIMELINE:
