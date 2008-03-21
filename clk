@@ -9,4 +9,4 @@ $ENV{PATH} = ".:$ENV{PATH}" if substr($0, 0, 1) eq '.';
 
 my $command = shift or die "Please specfy a clk command\n";
 
-exec "clk-$command.pl", @ARGV;
+exec "clk-$command", @ARGV;

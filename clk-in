@@ -4,7 +4,7 @@ use warnings;
 use IPC::Open2;
 
 # open clk-store-entry
-my $pid = open2(my $reader, my $writer, './clk-store-entry.pl', './play');
+my $pid = open2(my $reader, my $writer, 'clk-store-entry', './play');
 
 # generate the entry
 my @parts = (gmtime)[ 0 .. 5];
