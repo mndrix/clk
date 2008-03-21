@@ -3,9 +3,9 @@ use strict;
 use warnings;
 sub lock_file ($&);  # predeclare for some nicer syntax
 
-my $root = shift;
-die "clk-store-entry path_to_storage\n" if not defined $root;
-die "$root is not a directory\n" if not -d $root;
+my $root = $ENV{CLK_ROOT}
+    or die "Please set CLK_ROOT before using clk\n";
+die "CLK_ROOT=$root is not a directory\n" if not -d $root;
 
 # parse the input for an entry time (assume the input is well-formed)
 my $entry = do { local $/; <STDIN> };
