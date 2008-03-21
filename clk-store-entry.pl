@@ -12,7 +12,8 @@ my $entry = do { local $/; <STDIN> };
 my $entry_time = extract_entry_time(\$entry)
     or die "No valid time in the entry\n";
 
-# TODO calculate the entry ID
+# calculate the entry ID
+my $entry_id = calculate_entry_id(\$entry);
 # TODO store the entry under the root
 
 # look through each timeline for one that can hold this entry
@@ -37,9 +38,8 @@ while ( my $timeline = readdir($dir) ) {
         # append this entry to the timeline
         open $fh, '>>', $_[0]
             or die "Cannot reopen timeline $_[0] for appending\n";
-        my $id = calculate_entry_id(\$entry);
-        print {$fh} "$entry_time $id\n";
-        print "$id\n";
+        print {$fh} "$entry_time $entry_id\n";
+        print "$entry_id\n";
         return 1;  # success
     };
     next TIMELINE if not $success;
@@ -50,9 +50,8 @@ closedir $dir;
 # there are no candidate timelines, so atomically create one
 require File::Temp;
 my ($fh, $filename) = File::Temp::tempfile();
-my $id = calculate_entry_id(\$entry);
-print {$fh} "$entry_time $id\n";
-print "$id\n";
+print {$fh} "$entry_time $entry_id\n";
+print "$entry_id\n";
 close $fh;
 rename $filename, "$timelines_dir/$entry_time";
 
