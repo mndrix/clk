@@ -57,3 +57,13 @@ package main;  # back to your regularly scheduled package
 #     ], 'some message';
 #
 # and have the 'time:' string provided to the program as STDIN
+
+# TODO or maybe something that looks more like a command line:
+
+cmd_test <<'...'
+$ clk store-entry
+< time: 2008-03-21T12:34:56Z
+> 44a28b594b4853b6cc0c671c3fa31b12d9abcdb4
+!
+? 0
+...
