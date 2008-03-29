@@ -5,14 +5,28 @@ use base qw( Exporter );
 
 use Test::Builder;
 use IPC::Open3 qw( open3 );
+use File::Path qw( rmtree );
+use File::chdir;
 
-BEGIN { our @EXPORT = qw( cmd_ok ) };
+BEGIN { our @EXPORT = qw( clk_setup_test cmd_ok files_ok ) };
 my $Test = Test::Builder->new;
 
 # import is_deeply without everything in Test::More::import()
 use Test::More ();
 *is_deeply = \&Test::More::is_deeply;
 
+# perform some setup which should be done before every clk test
+sub clk_setup_test {
+    $ENV{CLK_ROOT} = 't/_clk';
+    mkdir 't/_clk' if not -d 't/_clk';
+
+    # clean up after ourselves
+    END {
+        rmtree('t/_clk') if !$ENV{DEBUG} && -d 't/_clk';
+    }
+}
+
+# run a command and check the output, error and exit code
 sub cmd_ok {
     my ($spec) = @_;
     my @lines = split m{\n}, $spec;
@@ -37,7 +51,7 @@ sub cmd_ok {
     my $got_output = '';
     my $got_error  = '';
     my $got_exit;
-    print {$write_fh} join("\n", @input);
+    print {$write_fh} join("\n", @input) . "\n";
     close $write_fh;
     $got_output = do { local $/; <$read_fh> };
     $got_error  = do { local $/; <$err_fh>  };
@@ -51,6 +65,45 @@ sub cmd_ok {
     $Test->cmp_ok( $got_exit, '==', $exit, "$cmd : exit code" );
 
     return;
+}
+
+# examine a filesystem for file and contents
+sub files_ok {
+    my ($description) = @_;
+    local $CWD = $ENV{CLK_ROOT};
+
+    my @lines = split /\n/, $description;
+    LINE:
+    while ( my $line = shift @lines ) {
+        next LINE if $line =~ m/^\s+/;  # we're not ready for file contents
+        chomp( my $filename = $line );
+        if ( not -e $filename ) {
+            $Test->ok( 0, "$filename exists" );
+            next LINE;
+        }
+
+        # what should the file contents be?
+        my @expected;
+        my $contents = shift @lines;
+        my ($indent) = $contents =~ m/^(\s+)/;
+        $contents =~ s/^$indent//;
+        push @expected, $contents;
+        CONTENT_LINE:
+        while ( my $content_line = shift @lines ) {
+            if ( $content_line =~ s/^$indent// ) {
+                push @expected, $content_line;
+            }
+            else {
+                unshift @lines, $content_line;
+                last CONTENT_LINE;
+            }
+        }
+
+        # compare the file contents to the expected contents
+        open my $fh, '<', $filename or die "Cannot open $filename : $!\n";
+        my @got = map { chomp ( my $v = $_ ); $v } <$fh>;
+        is_deeply( \@got, \@expected, "$filename contents" );
+    }
 }
 
 1;
