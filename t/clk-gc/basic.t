@@ -1,6 +1,11 @@
 use strict;
 use warnings;
-use Test::More;
+use Test::More tests => 1;
+
+TODO: {
+    local $TODO = 'implement some real tests';
+    ok(0);
+}
 
 # TODO remove any entries which are not referenced by the timeline
 #      as long as the creation time of the entry is old enough.

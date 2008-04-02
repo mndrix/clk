@@ -2,7 +2,6 @@ use strict;
 use warnings;
 use Test::More tests => 30;
 use App::Clk::Test;
-use File::Path qw( rmtree );
 
 clk_setup_test();
 

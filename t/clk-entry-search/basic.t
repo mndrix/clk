@@ -1,6 +1,11 @@
 use strict;
 use warnings;
-use Test::More;
+use Test::More tests => 1;
+
+TODO: {
+    local $TODO = 'implement some real tests';
+    ok(0);
+}
 
 # TODO search for an entry based on a complete entry ID
 # TODO search for an entry based on a partial entry ID
