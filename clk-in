@@ -3,16 +3,27 @@ use strict;
 use warnings;
 use IPC::Open2;
 
-# open clk-store-entry
-my $pid = open2(my $reader, my $writer, 'clk-store-entry', './play');
+my $storing_entry = not ( $ARGV[0] && $ARGV[0] eq '--output-only' );
+
+my ( $pid, $reader, $writer );
+if ($storing_entry) {    # send output to clk-store-entry
+    $pid = open2( $reader, $writer, 'clk-store-entry', './play' );
+}
+else {                   # send output to STDOUT
+    $writer = \*STDOUT;
+}
 
 # generate the entry
-my @parts = (gmtime)[ 0 .. 5];
+my $time =  $ENV{CLK_TIME} || time;
+my @parts = (gmtime $time)[ 0 .. 5];
 $parts[4]++;  # use human-readable day
 $parts[5] += 1900; # ... and year
 printf {$writer} "time: %04d-%02d-%02dT%02d:%02d:%02dZ\n", reverse @parts;
-close $writer;  # send EOF
 
-my $entry_id = <$reader>;
-waitpid $pid, 0;
-print $entry_id if $entry_id;
+# if storing the entry, output its entry ID
+if ($storing_entry) {
+    close $writer;    # send EOF
+    my $entry_id = <$reader>;
+    waitpid $pid, 0;
+    print $entry_id if $entry_id;
+}

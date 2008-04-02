@@ -7,6 +7,7 @@ use Test::Builder;
 use IPC::Open3 qw( open3 );
 use File::Path qw( rmtree );
 use File::chdir;
+use Time::Local qw( timegm );
 
 BEGIN { our @EXPORT = qw( clk_setup_test cmd_ok files_ok ) };
 my $Test = Test::Builder->new;
@@ -17,8 +18,18 @@ use Test::More ();
 
 # perform some setup which should be done before every clk test
 sub clk_setup_test {
+    my ($args) = @_;
+
+    # create a fresh, safe root directory
     $ENV{CLK_ROOT} = 't/_clk';
     mkdir 't/_clk' if not -d 't/_clk';
+
+    # establish a fake time, if necessary
+    if ( my $iso = $args->{fake_time} ) {
+        my @parts = split /[-T:Z]/, $iso;
+        $parts[1]--;
+        $ENV{CLK_TIME} = timegm( reverse @parts );
+    }
 
     # clean up after ourselves
     END {
