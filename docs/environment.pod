@@ -1,0 +1,21 @@
+=head1 NAME Environment Variables
+
+=head1 DESCRIPTION
+
+Various environment variables affect the way that that clk runs.
+The following documentation decribes those variables, which
+commands they influence and how.
+
+=head1 VARIABLES
+
+=head1 CLK_ROOT
+
+Contains a filesystem path to a directory which should be used
+to store all of clk's data.  clk sets this variable to
+F<./play> if it's not set already.
+
+=head1 CLK_TIME
+
+A time in epoch seconds.  If this variable is set, clk-in uses it
+as its own time reference.  If the variable is not set, the current
+system time is used instead.
