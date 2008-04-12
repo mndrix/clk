@@ -38,3 +38,30 @@ if ($storing_entry) {
     waitpid $pid, 0;
     print $entry_id if $entry_id;
 }
+
+__END__
+
+=head1 NAME
+
+clk-in - Begin recording time for a task
+
+=head1 SYNOPSIS
+
+clk in [--output-only] [text...]
+
+=head1 DESCRIPTION
+
+Create a new entry to record the current time with an optional C<text>.  When
+beginning to work on a new task, the start time should be recorded by running
+L<clk-in>.  By default, the current time is recorded.  Any words that are not
+interpreted as options or associated arguments are joined with spaces and
+considered part of the C<text>.
+
+=head1 OPTIONS
+
+=head2 --output-only
+
+Only display the new entry's content on STDOUT, don't put a copy in the entry
+store.  This option is mostly useful for testing and scripting.  Without
+this option, L<clk-in> sends the entry content to L<clk-store-entry> to
+be saved in the entry store.
