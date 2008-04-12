@@ -5,13 +5,14 @@ use IPC::Open2;
 
 # process command line arguments
 my $storing_entry = 1;
-my $time =  $ENV{CLK_TIME} || time;
+our $time = $ENV{CLK_TIME} || time;
 my $i = 0;
 while ( $i <= $#ARGV ) {
     if ( $ARGV[$i] eq '--at' ) {
         die "--at requires an argument\n" if $i + 1 > $#ARGV;
-        $time = $ARGV[ $i + 1 ];
-        die "Invalid time format for --at: $time\n" if $time !~ m/^\d+$/;
+        my $timespec = $ARGV[ $i + 1 ];
+        $time = resolve_timespec($timespec);
+        die "Invalid timespec for --at: $timespec\n" if not $time;
         splice @ARGV, $i, 2;    # remove the processed arguments
         next;
     }
@@ -51,6 +52,15 @@ if ($storing_entry) {
     print $entry_id if $entry_id;
 }
 
+
+sub resolve_timespec {
+    my ($string) = @_;
+    our $time;
+    return $string if $string =~ m/^\d+$/;  # epoch seconds
+    return $time - 60*$1 if $string =~ m/^(\d+)m/;
+    return;
+}
+
 __END__
 
 =head1 NAME
@@ -59,7 +69,7 @@ clk-in - Begin recording time for a task
 
 =head1 SYNOPSIS
 
-clk in [--at seconds] [--output-only] [text...]
+clk in [--at timespec] [--output-only] [text...]
 
 =head1 DESCRIPTION
 
@@ -71,11 +81,16 @@ considered part of the C<text>.
 
 =head1 OPTIONS
 
-=head2 --at seconds
+=head2 --at timespec
 
 Instead of creating an entry with the current time, create an entry
-at the time specified in seconds since the epoch.  C<--at> takes precedence
-over any time specified with the C<CLK_TIME> environment variable.
+at the time specified by C<timespec>.  Valid timespecs are:
+
+    * a number of seconds since the epoch
+    * a number of minutes in the past (such as "7m" for 7 minutes)
+
+C<--at> takes precedence over any time specified with the C<CLK_TIME>
+environment variable.
 
 =head2 --output-only
 

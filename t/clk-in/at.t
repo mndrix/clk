@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 12;
+use Test::More tests => 15;
 use App::Clk::Test;
 
 clk_setup_test();
@@ -13,7 +13,7 @@ $ ./clk in --at
 ...
 cmd_ok <<'...';
 $ ./clk in --at jjjjjjjjj
-! Invalid time format for --at: jjjjjjjjj
+! Invalid timespec for --at: jjjjjjjjj
 ? 255
 ...
 
@@ -27,8 +27,11 @@ $ ./clk in  --output-only --at 1208030762
 > time: 2008-04-12T20:06:02Z
 ...
 
-# TODO --at with no arguments
-# TODO --at with invalid arguments
+# using minutes
+cmd_ok <<'...', { at => '2008-04-12T20:06:02Z' };
+$ ./clk in --at 6m --output-only
+> time: 2008-04-12T20:00:02Z
+...
 
 # The most fundamental argument for --at is a time in epoch
 # seconds.  All other argument formats eventually resolve
