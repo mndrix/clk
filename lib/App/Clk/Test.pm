@@ -26,9 +26,7 @@ sub clk_setup_test {
 
     # establish a fake time, if necessary
     if ( my $iso = $args->{fake_time} ) {
-        my @parts = split /[-T:Z]/, $iso;
-        $parts[1]--;
-        $ENV{CLK_TIME} = timegm( reverse @parts );
+        fake_time($iso);
     }
 
     # clean up after ourselves
@@ -39,8 +37,10 @@ sub clk_setup_test {
 
 # run a command and check the output, error and exit code
 sub cmd_ok {
-    my ($spec) = @_;
+    my $spec = shift;
+    my $args = shift || {};
     my @lines = split m{\n}, $spec;
+    fake_time( $args->{at} ) if $args->{at};
 
     # parse the test specification
     my ( $cmd, @input, @output, @error );
@@ -120,6 +120,16 @@ sub files_ok {
         my @got = map { chomp ( my $v = $_ ); $v } <$fh>;
         is_deeply( \@got, \@expected, "$filename contents" );
     }
+}
+
+# make believe that it's the given time
+sub fake_time {
+    my ($iso) = @_;
+    my @parts = split /[-T:Z]/, $iso;
+    $parts[1]--;
+    $ENV{CLK_TIME} = timegm( reverse @parts );
+
+    return;
 }
 
 1;
