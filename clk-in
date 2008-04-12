@@ -3,7 +3,14 @@ use strict;
 use warnings;
 use IPC::Open2;
 
-my $storing_entry = not ( $ARGV[0] && $ARGV[0] eq '--output-only' );
+# process command line arguments
+my $storing_entry = 1;
+for ( my $i=0; $i <= $#ARGV; $i++ ) {
+    if ( $ARGV[$i] eq '--output-only' ) {
+        $storing_entry = 0;
+        splice @ARGV, $i, 1;  # remove the processed argument
+    }
+}
 
 my ( $pid, $reader, $writer );
 if ($storing_entry) {    # send output to clk-store-entry
@@ -13,12 +20,16 @@ else {                   # send output to STDOUT
     $writer = \*STDOUT;
 }
 
-# generate the entry
+# generate the entry time
 my $time =  $ENV{CLK_TIME} || time;
 my @parts = (gmtime $time)[ 0 .. 5];
 $parts[4]++;  # use human-readable day
 $parts[5] += 1900; # ... and year
 printf {$writer} "time: %04d-%02d-%02dT%02d:%02d:%02dZ\n", reverse @parts;
+
+# generate the entry text
+print {$writer} 'text: ' . join(' ', @ARGV)
+    if @ARGV;
 
 # if storing the entry, output its entry ID
 if ($storing_entry) {
