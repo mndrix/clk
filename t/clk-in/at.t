@@ -1,14 +1,34 @@
 use strict;
 use warnings;
-use Test::More tests => 1;
+use Test::More tests => 12;
+use App::Clk::Test;
 
-TODO: {
-    local $TODO = 'implement some real tests';
-    ok(0);
-}
+clk_setup_test();
 
-# TODO be able to "clk in" at a particular time in the past
-#      using some kind of --at option.
+# common error conditions
+cmd_ok <<'...';
+$ ./clk in --at
+! --at requires an argument
+? 255
+...
+cmd_ok <<'...';
+$ ./clk in --at jjjjjjjjj
+! Invalid time format for --at: jjjjjjjjj
+? 255
+...
+
+# using epoch seconds
+cmd_ok <<'...';
+$ ./clk in --at 1208030762 --output-only
+> time: 2008-04-12T20:06:02Z
+...
+cmd_ok <<'...';
+$ ./clk in  --output-only --at 1208030762
+> time: 2008-04-12T20:06:02Z
+...
+
+# TODO --at with no arguments
+# TODO --at with invalid arguments
 
 # The most fundamental argument for --at is a time in epoch
 # seconds.  All other argument formats eventually resolve

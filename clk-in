@@ -5,11 +5,24 @@ use IPC::Open2;
 
 # process command line arguments
 my $storing_entry = 1;
-for ( my $i=0; $i <= $#ARGV; $i++ ) {
+my $time =  $ENV{CLK_TIME} || time;
+my $i = 0;
+while ( $i <= $#ARGV ) {
+    if ( $ARGV[$i] eq '--at' ) {
+        die "--at requires an argument\n" if $i + 1 > $#ARGV;
+        $time = $ARGV[ $i + 1 ];
+        die "Invalid time format for --at: $time\n" if $time !~ m/^\d+$/;
+        splice @ARGV, $i, 2;    # remove the processed arguments
+        next;
+    }
     if ( $ARGV[$i] eq '--output-only' ) {
         $storing_entry = 0;
         splice @ARGV, $i, 1;  # remove the processed argument
+        next;
     }
+
+    # found no known options.  move on to the next argument
+    $i++;
 }
 
 my ( $pid, $reader, $writer );
@@ -21,7 +34,6 @@ else {                   # send output to STDOUT
 }
 
 # generate the entry time
-my $time =  $ENV{CLK_TIME} || time;
 my @parts = (gmtime $time)[ 0 .. 5];
 $parts[4]++;  # use human-readable day
 $parts[5] += 1900; # ... and year
@@ -47,7 +59,7 @@ clk-in - Begin recording time for a task
 
 =head1 SYNOPSIS
 
-clk in [--output-only] [text...]
+clk in [--at seconds] [--output-only] [text...]
 
 =head1 DESCRIPTION
 
@@ -58,6 +70,12 @@ interpreted as options or associated arguments are joined with spaces and
 considered part of the C<text>.
 
 =head1 OPTIONS
+
+=head2 --at seconds
+
+Instead of creating an entry with the current time, create an entry
+at the time specified in seconds since the epoch.  C<--at> takes precedence
+over any time specified with the C<CLK_TIME> environment variable.
 
 =head2 --output-only
 
