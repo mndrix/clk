@@ -59,10 +59,15 @@ sub cmd_ok {
     my ($write_fh, $read_fh, $err_fh);
     $err_fh = 1;  # so that STDERR is not redirected to STDOUT
     my $pid = open3 $write_fh, $read_fh, $err_fh, $cmd;
+    local $SIG{PIPE} = sub {
+        die "Broken pipe. Perhaps the following command wasn't "
+          . "expecting input on STDIN: $cmd\n";
+    };
     my $got_output = '';
     my $got_error  = '';
     my $got_exit;
-    print {$write_fh} join("\n", @input) . "\n";
+    print {$write_fh} join( "\n", @input ) . "\n"
+        if @input;
     close $write_fh;
     $got_output = do { local $/; <$read_fh> };
     $got_error  = do { local $/; <$err_fh>  };
