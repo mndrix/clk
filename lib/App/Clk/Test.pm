@@ -55,6 +55,10 @@ sub cmd_ok {
         else                   { die "Unknown spec line type: $type\n" }
     }
 
+    # empty strings on the end represent trailing newline characters
+    push @output, '' if @output;
+    push @error, ''  if @error;
+
     # run the command and capture input, output, error and exit code
     my ($write_fh, $read_fh, $err_fh);
     $err_fh = 1;  # so that STDERR is not redirected to STDOUT
@@ -75,9 +79,9 @@ sub cmd_ok {
     $got_exit = $? >> 8;
 
     $got_output = '' if not defined $got_output;
-    is_deeply( [ split /\n/, $got_output ], \@output, "$cmd : stdout" );
+    is_deeply( [ split /\n/, $got_output, -1 ], \@output, "$cmd : stdout" );
     $got_error = '' if not defined $got_error;
-    is_deeply( [ split /\n/, $got_error  ], \@error,  "$cmd : stderr" );
+    is_deeply( [ split /\n/, $got_error,  -1 ], \@error,  "$cmd : stderr" );
     $Test->cmp_ok( $got_exit, '==', $exit, "$cmd : exit code" );
 
     return;

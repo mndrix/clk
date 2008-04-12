@@ -28,7 +28,7 @@ $parts[5] += 1900; # ... and year
 printf {$writer} "time: %04d-%02d-%02dT%02d:%02d:%02dZ\n", reverse @parts;
 
 # generate the entry text
-print {$writer} 'text: ' . join(' ', @ARGV)
+print {$writer} 'text: ' . join(' ', @ARGV) . "\n"
     if @ARGV;
 
 # if storing the entry, output its entry ID
