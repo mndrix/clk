@@ -75,7 +75,7 @@ clk in [--at timespec] [--output-only] [text...]
 
 Create a new entry to record the current time with an optional C<text>.  When
 beginning to work on a new task, the start time should be recorded by running
-L<clk-in>.  By default, the current time is recorded.  Any words that are not
+I<clk in>.  By default, the current time is recorded.  Any words that are not
 interpreted as options or associated arguments are joined with spaces and
 considered part of the C<text>.
 
@@ -96,5 +96,5 @@ environment variable.
 
 Only display the new entry's content on STDOUT, don't put a copy in the entry
 store.  This option is mostly useful for testing and scripting.  Without
-this option, L<clk-in> sends the entry content to L<clk-store-entry> to
+this option, I<clk in> sends the entry content to L<clk-store-entry> to
 be saved in the entry store.
