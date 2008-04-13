@@ -9,8 +9,7 @@ use File::Path qw( rmtree );
 use File::chdir;
 use Time::Local qw( timegm );
 
-BEGIN { our @EXPORT = qw( clk_setup_test cmd_ok files_ok ) };
-my $Test = Test::Builder->new;
+BEGIN { our @EXPORT = qw( clk_setup_test cmd_ok files_ok touch_file ) };
 
 # import is_deeply without everything in Test::More::import()
 use Test::More ();
@@ -39,6 +38,7 @@ sub clk_setup_test {
 sub cmd_ok {
     my $spec = shift;
     my $args = shift || {};
+    my $Test = Test::More->builder;
     my @lines = split m{\n}, $spec;
     fake_time( $args->{at} ) if $args->{at};
 
@@ -90,6 +90,7 @@ sub cmd_ok {
 # examine a filesystem for file and contents
 sub files_ok {
     my ($description) = @_;
+    my $Test = Test::More->builder;
     local $CWD = $ENV{CLK_ROOT};
 
     my @lines = split /\n/, $description;
@@ -124,6 +125,13 @@ sub files_ok {
         my @got = map { chomp ( my $v = $_ ); $v } <$fh>;
         is_deeply( \@got, \@expected, "$filename contents" );
     }
+}
+
+# create a file relative to the clk root
+sub touch_file {
+    my ($filename) = @_;
+    local $CWD = $ENV{CLK_ROOT};
+    # TODO implement this sub
 }
 
 # make believe that it's the given time
