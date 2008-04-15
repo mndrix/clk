@@ -11,4 +11,4 @@ test:
 
 # build HTML documentation for each command
 $(HTML_DOCS) : docs/%.html : %
-	pod2html --podroot=$(PWD) --podpath=. --infile=$< --outfile=$@
+	./pod2html $< > $@
