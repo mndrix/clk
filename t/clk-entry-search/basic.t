@@ -1,32 +1,30 @@
 use strict;
 use warnings;
-use Test::More tests => 1;
+use Test::More tests => 9;
 use App::Clk::Test;
 
-TODO: {
-    local $TODO = 'search by full entry ID not working yet';
-    ok(0);
+clk_setup_test();
 
-# marking these tests TODO isn't working, oh well
-=pod
-    touch_file('entries/ab/cdef0000000000000000000000000000000000');
+# oops, forgot to provide an entry ID
+cmd_ok <<'...';
+$ ./clk entry-search
+! No entry ID given
+? 255
+...
 
-    # the entry does exist
-    cmd_ok <<'...';
+# the entry does exist
+touch_file('entries/ab/cdef0000000000000000000000000000000000');
+cmd_ok <<'...';
 $ ./clk entry-search abcdef0000000000000000000000000000000000
 > abcdef0000000000000000000000000000000000
 ...
 
-    # the entry does not exist
-    cmd_ok <<'...';
+# the entry does not exist
+cmd_ok <<'...';
 $ ./clk entry-search 9999999999999999999999999999999999999999
 ? 1
 ...
-=cut
 
-}
-
-# TODO search for an entry based on a complete entry ID
 # TODO search for an entry based on a partial entry ID
 # TODO search for an entry based on it's relative distance
 #      from the end of the timeline.  This is the "-2"

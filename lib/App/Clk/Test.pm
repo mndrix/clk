@@ -131,7 +131,15 @@ sub files_ok {
 sub touch_file {
     my ($filename) = @_;
     local $CWD = $ENV{CLK_ROOT};
-    # TODO implement this sub
+    my @dirs = split m{/}, $filename;
+    my $file = pop @dirs;
+    for my $dir (@dirs) {
+        mkdir $dir if not -e $dir;
+        chdir $dir;
+    }
+
+    open my $fh, '>', $file or die "Cannot open file $file: $!\n";
+    close $fh;
 }
 
 # make believe that it's the given time

@@ -1,0 +1,41 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+
+my $entry_id = shift or die "No entry ID given\n";
+
+my $hash = substr $entry_id, 0, 2;
+my $rest = substr $entry_id, 2;
+my $entry_filename = "$ENV{CLK_ROOT}/entries/$hash/$rest";
+if ( -e $entry_filename ) {
+    print "$entry_id\n";
+    exit;
+}
+
+exit 1;  # failure
+
+__END__
+
+=head1 NAME
+
+clk-entry-search - Search for entries created by clk-in
+
+=head1 SYNOPSIS
+
+B<clk entry-search> entry_ID
+
+=head1 DESCRIPTION
+
+Searches for entries which have been created by L<clk-in>.  C<entry_ID> is
+the unique identifier for an entry.  It should be 40 hexadecimal digits long.
+
+=head1 OPTIONS
+
+None
+
+=head1 EXIT CODES
+
+ 0   - At least one matching entry was found
+ 1   - No matching entries were found
+ 255 - Improper invocation or another error was encountered.
+       Details are provided on stderr.
