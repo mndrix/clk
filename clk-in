@@ -69,7 +69,7 @@ clk-in - Begin recording time for a task
 
 =head1 SYNOPSIS
 
-clk in [--at timespec] [--output-only] [text...]
+B<clk in> [--at timespec] [--output-only] [text...]
 
 =head1 DESCRIPTION
 
