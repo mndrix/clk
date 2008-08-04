@@ -1,11 +1,11 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
+use lib 'lib';  # requires 100+ system calls, yuck
+use App::Clk::Util qw( clk_root );
 sub lock_file ($&);  # predeclare for some nicer syntax
 
-my $root = $ENV{CLK_ROOT}
-    or die "Please set CLK_ROOT before using clk\n";
-die "CLK_ROOT=$root is not a directory\n" if not -d $root;
+my $root = clk_root();
 
 # parse the input for an entry time (assume the input is well-formed)
 my $entry = do { local $/; <STDIN> };

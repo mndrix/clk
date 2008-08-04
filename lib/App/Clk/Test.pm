@@ -32,6 +32,8 @@ sub clk_setup_test {
     END {
         rmtree('t/_clk') if !$ENV{DEBUG} && -d 't/_clk';
     }
+
+    return $ENV{CLK_ROOT};
 }
 
 # run a command and check the output, error and exit code

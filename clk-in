@@ -1,7 +1,9 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
+use lib 'lib';  # uses 100+ system calls, yuck
 use IPC::Open2;
+use App::Clk::Util qw( clk_root );
 
 # process command line arguments
 my $storing_entry = 1;
@@ -26,6 +28,25 @@ while ( $i <= $#ARGV ) {
     $i++;
 }
 
+# generate the entry text which follows the time stamp
+my $entry_text;
+if ( my $hook = get_hook('pre-in') ) {
+    $entry_text = qx{ $hook @ARGV 2>&1 };
+    die "Unable to run the 'pre-in' hook at $hook\n"
+        if not defined $entry_text;
+    if ($?) {
+        my $message = defined $entry_text ? $entry_text : '';
+        chomp $message;
+        warn "The hook 'pre-in' stopped the entry with the message:\n"
+           . "$message\n";
+        exit($? >> 8);
+    }
+}
+else {
+    $entry_text = 'text: ' . join(' ', @ARGV) . "\n" if @ARGV;
+}
+
+# set up filehandles based on whether the entry should be saved
 my ( $pid, $reader, $writer );
 if ($storing_entry) {    # send output to clk-store-entry
     $pid = open2( $reader, $writer, 'clk-store-entry', './play' );
@@ -34,15 +55,12 @@ else {                   # send output to STDOUT
     $writer = \*STDOUT;
 }
 
-# generate the entry time
+# print the full entry content
 my @parts = (gmtime $time)[ 0 .. 5];
 $parts[4]++;  # use human-readable day
 $parts[5] += 1900; # ... and year
 printf {$writer} "time: %04d-%02d-%02dT%02d:%02d:%02dZ\n", reverse @parts;
-
-# generate the entry text
-print {$writer} 'text: ' . join(' ', @ARGV) . "\n"
-    if @ARGV;
+print {$writer} $entry_text if defined $entry_text;
 
 # if storing the entry, output its entry ID
 if ($storing_entry) {
@@ -52,6 +70,15 @@ if ($storing_entry) {
     print $entry_id if $entry_id;
 }
 
+##########################################################################
+
+sub get_hook {
+    my ($hook_name) = @_;
+    my $root        = clk_root();
+    my $path        = "$root/hooks/$hook_name";
+    return $path if -x $path;
+    return;
+}
 
 sub resolve_timespec {
     my ($string) = @_;
@@ -98,3 +125,41 @@ Only display the new entry's content on STDOUT, don't put a copy in the entry
 store.  This option is mostly useful for testing and scripting.  Without
 this option, I<clk in> sends the entry content to L<clk-store-entry> to
 be saved in the entry store.
+
+=head1 HOOKS
+
+=head2 pre-in
+
+This hook is run right before a new entry is generated.  All arguments
+provided to C<clk-in> which are not listed in the L</OPTIONS> section
+are passed through to this hook.  If the hook exits with 0, the hook's
+standard output is used as the content for the new entry.  If the hook exits
+with a non-zero exit code, C<clk-in> exits with a message before the
+new entry is created.
+
+This hook can be used to create specific entry content based on personal
+preferences.  For instance, if you want to record time spent working on
+projects for 'Intel Corporation' (abbreviated "intc") by tagging them with a
+specify entry key, you could create a C<pre-in> hook script like this:
+
+    #!/usr/bin/perl
+    my $text = join ' ', @ARGV;
+    if ( $text =~ s{\b intc \b}{}x ) {
+        print "client: Intel Corporation\n";
+    }
+    print "text: $text\n":
+
+which would cause something like:
+
+    $ clk in --output-only intc processor design
+    time: 2008-07-14T19:47:31Z
+    client: Intel Corporation
+    text: processor design
+
+=head1 EXIT CODES
+
+ 0   - the command executed successfully
+ *   - the pre-in hook stopped the command prematurely and this was its
+       exit code.  In other words, if the pre-in hook exits non-zero,
+       clk-in exits with the same code.
+ 255 - an unknown error occurred.  Check the command output for details
