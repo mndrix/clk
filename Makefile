@@ -1,4 +1,4 @@
-HTML_DOCS = docs/clk-in.html docs/clk-entry-search.html
+HTML_DOCS = docs/clk-in.html docs/clk-out.html docs/clk-entry-search.html
 POD2HTML_TMPS = *.tmp
 
 doc: $(HTML_DOCS)
