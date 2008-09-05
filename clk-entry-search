@@ -3,13 +3,29 @@ use strict;
 use warnings;
 
 my $entry_id = shift or die "No entry ID given\n";
+die "A partial entry ID must be at least 3 characters long\n"
+    if length($entry_id) < 3;
 
 my $hash = substr $entry_id, 0, 2;
 my $rest = substr $entry_id, 2;
-my $entry_filename = "$ENV{CLK_ROOT}/entries/$hash/$rest";
-if ( -e $entry_filename ) {
-    print "$entry_id\n";
-    exit;
+if ( length $rest == 38 ) {  # full entry ID
+    my $entry_filename = "$ENV{CLK_ROOT}/entries/$hash/$rest";
+    if ( -e $entry_filename ) {
+        print "$entry_id\n";
+        exit;
+    }
+}
+else {  # partial entry ID
+    my @entry_filenames = glob("$ENV{CLK_ROOT}/entries/$hash/$rest*");
+    if ( @entry_filenames > 1 ) {
+        warn "The partial entry ID '$entry_id' is ambiguous\n";
+        exit 2;
+    }
+    elsif ( @entry_filenames == 1 ) {
+        ( my $entry_id = substr $entry_filenames[0], -41 ) =~ y#/##d;
+        print "$entry_id\n";
+        exit;
+    }
 }
 
 exit 1;  # failure
@@ -22,12 +38,13 @@ clk-entry-search - Search for entries created by clk-in
 
 =head1 SYNOPSIS
 
-B<clk entry-search> entry_ID
+B<clk entry-search> id_pattern
 
 =head1 DESCRIPTION
 
-Searches for entries which have been created by L<clk-in>.  C<entry_ID> is
-the unique identifier for an entry.  It should be 40 hexadecimal digits long.
+Searches for entries which have been created by L<clk-in>.  C<id_pattern> is
+either the 40 hexadecimal digit identifier for an entry or a unique prefix
+thereof.  The prefix must be at least 3 characters long.
 
 =head1 OPTIONS
 
@@ -37,5 +54,6 @@ None
 
  0   - At least one matching entry was found
  1   - No matching entries were found
+ 2   - A partial entry ID search was ambiguous
  255 - Improper invocation or another error was encountered.
        Details are provided on stderr.
