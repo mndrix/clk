@@ -42,7 +42,23 @@ if ( my $hook = get_hook('pre-in') ) {
         exit($? >> 8);
     }
 }
-else {
+elsif ( looks_like_partial_entry_id( $ARGV[0] ) ) {
+    open my $search,
+        "./clk entry-search --output content $ARGV[0] 2>/dev/null |";
+    my $content;
+    while ( my $line = <$search> ) {
+        next unless $line =~ m/^content (\d+)$/;
+        my $actually_read = read $search, $content, $1;
+        die "Tried to read $1 characters, but got $actually_read\n"
+            if $actually_read != $1;
+        last;
+    }
+    close $search;
+    if ($content) {
+        $entry_text = join "\n", grep { !/^time: / } split(/\n/, $content, -1);
+    }
+}
+if ( not defined $entry_text ) {
     $entry_text = 'text: ' . join(' ', @ARGV) . "\n" if @ARGV;
 }
 
@@ -86,6 +102,12 @@ sub resolve_timespec {
     return $string if $string =~ m/^\d+$/;  # epoch seconds
     return $time - 60*$1 if $string =~ m/^(\d+)m/;
     return;
+}
+
+sub looks_like_partial_entry_id {
+    my ($maybe) = @_;
+    return if not defined $maybe;
+    return $maybe =~ m/^[0-9a-f]{3,40}$/;
 }
 
 __END__
