@@ -4,6 +4,8 @@ use warnings;
 
 # process command line arguments
 my $outputting_content = 0;
+our $begin;
+our $end;
 my $i = 0;
 while ( $i <= $#ARGV ) {
     if ( $ARGV[$i] eq '--output' ) {
@@ -14,11 +16,21 @@ while ( $i <= $#ARGV ) {
         splice @ARGV, $i, 2;    # remove the processed arguments
         next;
     }
+    elsif ( $ARGV[$i] eq '--between' ) {
+        die "--between requires two arguments\n" if $i + 2 > $#ARGV;
+        $begin = $ARGV[ $i + 1 ];
+        $end   = $ARGV[ $i + 2 ];
+        splice @ARGV, $i, 3;    # remove the processed arguments
+        next;
+    }
 
     # found no known options.  move on to the next argument
     $i++;
 }
 
+search_by_time() if $begin or $end;
+
+# default to searching by entry ID
 my $entry_id = shift or die "No entry ID given\n";
 die "A partial entry ID must be at least 3 characters long\n"
     if length($entry_id) < 3;
@@ -62,6 +74,72 @@ sub emit {
     return;
 }
 
+sub search_by_time {
+    our $begin;
+    our $end;
+    require App::Clk::Util;
+    my $root = App::Clk::Util::clk_root();
+
+    # open all the timelines
+    my @timelines;
+    while ( my $timeline_filename = glob("$root/timelines/*") ) {
+        open my $fh, '<', $timeline_filename
+            or die "Couldn't open timeline $timeline_filename: $!\n";
+        push @timelines, $fh;
+    }
+
+    # these subs make the following code easier to understand
+    my @matches;
+    my $next_match = sub {
+        my $i = shift;
+        my $fh = $timelines[$i] or return;
+        LOOP: {
+            my $line = <$fh>;
+            if ( not defined $line ) {  # finished reading this timeline
+                $timelines[$i] = undef;
+                return;
+            }
+            chomp $line;
+            my ($hex_time, $entry_id) = split / /, $line;
+            my $time = hex $hex_time;
+            redo LOOP if $time < $begin;
+            if ( $time > $end ) {
+                $timelines[$i] = undef;
+                return;
+            }
+            return [ $time, $entry_id ];
+        };
+    };
+
+    # find the first match in each timeline
+    $matches[$_] = $next_match->($_) for 0 .. $#timelines;
+
+    # choose the earliest of the matches
+    while ( grep { defined } @matches ) {
+        my $earliest;
+        my $earliest_index;
+        for my $i ( 0 .. $#matches ) {
+            my $match = $matches[$i] or next;
+            if ( !$earliest or $match->[0] < $earliest->[0] ) {
+                $earliest       = $match;
+                $earliest_index = $i;
+            }
+        }
+        last if not $earliest;  # no more matches
+
+        # emit the earliest entry that we found
+        my $entry_id = $earliest->[1];
+        my $hash = substr $entry_id, 0, 2;
+        my $rest = substr $entry_id, 2;
+        emit("$root/entries/$hash/$rest");
+
+        # find the next match in the timeline that provided the earliest
+        $matches[$earliest_index] = $next_match->($earliest_index);
+    }
+
+    exit;
+}
+
 __END__
 
 =head1 NAME
@@ -81,6 +159,11 @@ thereof.  The prefix must be at least 3 characters long.
 The entry ID for each matching entry is printed to STDOUT.
 
 =head1 OPTIONS
+
+=head2 --between begin end
+
+Search for entries with time between C<begin> and C<end> (inclusive).  Those
+two arguments should be times given in seconds since the epoch.
 
 =head2 --output 'content'
 
