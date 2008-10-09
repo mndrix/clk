@@ -18,8 +18,9 @@ while ( $i <= $#ARGV ) {
     }
     elsif ( $ARGV[$i] eq '--between' ) {
         die "--between requires two arguments\n" if $i + 2 > $#ARGV;
-        $begin = $ARGV[ $i + 1 ];
-        $end   = $ARGV[ $i + 2 ];
+        require App::Clk::Util;
+        $begin = App::Clk::Util::resolve_timespec( $ARGV[ $i + 1 ] );
+        $end   = App::Clk::Util::resolve_timespec( $ARGV[ $i + 2 ] );
         splice @ARGV, $i, 3;    # remove the processed arguments
         next;
     }
@@ -162,8 +163,9 @@ The entry ID for each matching entry is printed to STDOUT.
 
 =head2 --between begin end
 
-Search for entries with time between C<begin> and C<end> (inclusive).  Those
-two arguments should be times given in seconds since the epoch.
+Search for entries with times between C<begin> and C<end> (inclusive).  Each
+argument should be a C<timespec> like those provided to clk-in's "--at"
+argument.
 
 =head2 --output 'content'
 

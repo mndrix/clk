@@ -21,6 +21,20 @@ sub clk_root {
     return $root;
 }
 
+# given a string representation of an instant in time, it returns
+# that instant as the number of seconds since the epoch.  Supported
+# instant formats are:
+#
+#   * a number of seconds since the epoch
+#   * a number followed by the letter "m" indicates a number of
+#     minutes in the past
+sub resolve_timespec {
+    my ($string) = @_;
+    return $string if $string =~ m/^\d+$/;  # epoch seconds
+    return ( $ENV{CLK_TIME} || time ) - 60*$1 if $string =~ m/^(\d+)m/;
+    return;
+}
+
 1;
 
 =head1 EXPORTABLE SUBROUTINES

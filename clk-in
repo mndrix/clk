@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use lib 'lib';  # uses 100+ system calls, yuck
 use IPC::Open2;
-use App::Clk::Util qw( clk_root );
+use App::Clk::Util qw( clk_root resolve_timespec );
 
 # process command line arguments
 my $storing_entry = 1;
@@ -93,14 +93,6 @@ sub get_hook {
     my $root        = clk_root();
     my $path        = "$root/hooks/$hook_name";
     return $path if -x $path;
-    return;
-}
-
-sub resolve_timespec {
-    my ($string) = @_;
-    our $time;
-    return $string if $string =~ m/^\d+$/;  # epoch seconds
-    return $time - 60*$1 if $string =~ m/^(\d+)m/;
     return;
 }
 
