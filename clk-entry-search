@@ -149,7 +149,7 @@ clk-entry-search - Search for entries created by clk-in
 
 =head1 SYNOPSIS
 
-B<clk entry-search> [--output 'content'] id_pattern
+B<clk entry-search> [--output 'content'] [id_pattern]
 
 =head1 DESCRIPTION
 
