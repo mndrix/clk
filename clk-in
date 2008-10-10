@@ -128,6 +128,7 @@ Instead of creating an entry with the current time, create an entry
 at the time specified by C<timespec>.  Valid timespecs are:
 
     * a number of seconds since the epoch
+    * 'now' which indicates the current time
     * a number of minutes in the past (such as "7m" for 7 minutes)
 
 C<--at> takes precedence over any time specified with the C<CLK_TIME>

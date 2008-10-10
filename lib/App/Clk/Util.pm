@@ -30,8 +30,10 @@ sub clk_root {
 #     minutes in the past
 sub resolve_timespec {
     my ($string) = @_;
-    return $string if $string =~ m/^\d+$/;  # epoch seconds
-    return ( $ENV{CLK_TIME} || time ) - 60*$1 if $string =~ m/^(\d+)m/;
+    my $time = $ENV{CLK_TIME} || time;
+    return $time           if $string eq 'now';
+    return $string         if $string =~ m/^\d+$/;     # epoch seconds
+    return $time - 60 * $1 if $string =~ m/^(\d+)m/;
     return;
 }
 
