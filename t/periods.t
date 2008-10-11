@@ -5,7 +5,7 @@ use App::Clk::Test;
 use App::Clk::Util qw( resolve_period );
 use POSIX qw( strftime );
 
-my %phrases = (
+my @phrases = (
     'today' => [
         [
             '2007-10-08T21:33:40',   # base
@@ -103,9 +103,9 @@ my %phrases = (
 #   ],
 );
 
-plan tests => 2 + 2 * (scalar keys %phrases);
+plan tests => 2 + 2 * ( @phrases / 2 );
 
-while ( my ($phrase, $tests) = each %phrases ) {
+while ( my ($phrase, $tests) = splice(@phrases, 0, 2) ) {
     for my $test (@$tests) {
         my ($base, $right_from, $right_to) = @$test;
         fake_time($base);
