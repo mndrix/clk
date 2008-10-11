@@ -28,56 +28,56 @@ my @phrases = (
         ],
     ],
 
-#   # names of the days of the week interpreted to be in the past
-#   'monday' => [
-#       [
-#           '2008-01-12T13:00:27',   # base
-#           '2008-01-07T00:00:00',   # expected from
-#           '2008-01-07T23:59:59',   # expected to
-#       ],
-#   ],
-#   'tuesday' => [
-#       [
-#           '2008-01-12T13:00:27',   # base
-#           '2008-01-08T00:00:00',   # expected from
-#           '2008-01-08T23:59:59',   # expected to
-#       ],
-#   ],
-#   'wednesday' => [
-#       [
-#           '2008-01-12T13:00:27',   # base
-#           '2008-01-09T00:00:00',   # expected from
-#           '2008-01-09T23:59:59',   # expected to
-#       ],
-#   ],
-#   'thursday' => [
-#       [
-#           '2008-01-12T13:00:27',   # base
-#           '2008-01-10T00:00:00',   # expected from
-#           '2008-01-10T23:59:59',   # expected to
-#       ],
-#   ],
-#   'friday' => [
-#       [
-#           '2008-01-12T13:00:27',   # base
-#           '2008-01-11T00:00:00',   # expected from
-#           '2008-01-11T23:59:59',   # expected to
-#       ],
-#   ],
-#   'saturday' => [
-#       [
-#           '2008-01-12T13:00:27',   # base
-#           '2008-01-05T00:00:00',   # expected from
-#           '2008-01-05T23:59:59',   # expected to
-#       ],
-#   ],
-#   'sunday' => [
-#       [
-#           '2008-01-12T13:00:27',   # base
-#           '2008-01-06T00:00:00',   # expected from
-#           '2008-01-06T23:59:59',   # expected to
-#       ],
-#   ],
+    # names of the days of the week interpreted to be in the past
+    'monday' => [
+        [
+            '2008-01-12T13:00:27',   # base
+            '2008-01-07T00:00:00',   # expected from
+            '2008-01-07T23:59:59',   # expected to
+        ],
+    ],
+    'tuesday' => [
+        [
+            '2008-01-12T13:00:27',   # base
+            '2008-01-08T00:00:00',   # expected from
+            '2008-01-08T23:59:59',   # expected to
+        ],
+    ],
+    'wednesday' => [
+        [
+            '2008-01-12T13:00:27',   # base
+            '2008-01-09T00:00:00',   # expected from
+            '2008-01-09T23:59:59',   # expected to
+        ],
+    ],
+    'thursday' => [
+        [
+            '2008-01-12T13:00:27',   # base
+            '2008-01-10T00:00:00',   # expected from
+            '2008-01-10T23:59:59',   # expected to
+        ],
+    ],
+    'friday' => [
+        [
+            '2008-01-12T13:00:27',   # base
+            '2008-01-11T00:00:00',   # expected from
+            '2008-01-11T23:59:59',   # expected to
+        ],
+    ],
+    'saturday' => [
+        [
+            '2008-01-12T13:00:27',   # base
+            '2008-01-05T00:00:00',   # expected from
+            '2008-01-05T23:59:59',   # expected to
+        ],
+    ],
+    'sunday' => [
+        [
+            '2008-01-12T13:00:27',   # base
+            '2008-01-06T00:00:00',   # expected from
+            '2008-01-06T23:59:59',   # expected to
+        ],
+    ],
 
     # week-size date ranges
     'this week' => [

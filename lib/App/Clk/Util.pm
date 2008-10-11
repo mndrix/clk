@@ -61,9 +61,28 @@ sub resolve_period {
 sub resolve_period_day {
     my ($time, $period) = @_;
     $period = lc $period;
-    return if $period !~ m/^(yester|to)day$/;
 
-    if ( $1 eq 'yester' ) { $time -= 24*60*60 }
+    if ( $period =~ m/^(yester|to)day$/ ) {
+        $time -= 24*60*60 if $1 eq 'yester';
+    }
+    elsif ( $period =~ m/^(sun|mon|tues|wednes|thurs|fri|satur)day$/ ) {
+        # Understand the name of a day of the week to mean the first such day
+        # in the past.  If the name of today is given, assume that the user
+        # meant the previous one; otherwise, she would have said "today"
+        my $today = ( localtime $time )[6];    # today's week day number
+        my @prefixes = qw( sun mon tues wednes thurs fri satur );
+        my $goal = 0;                          # goal's week day number
+        for my $prefix (@prefixes) {
+            last if $1 eq $prefix;
+            $goal++;
+        }
+        my $days = $today - $goal;
+        $days += 7 if $days <= 0;
+        $time -= $days * 24*60*60;
+    }
+    else {  # we don't understand this period format
+        return;
+    }
 
     return enclosing_day($time);
 }
