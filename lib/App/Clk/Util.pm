@@ -46,6 +46,7 @@ sub resolve_period {
     my @handlers = (
         \&resolve_period_today,
         \&resolve_period_yesterday,
+        \&resolve_period_week,
     );
 
     # ask each handler if it understands this pattern
@@ -74,6 +75,12 @@ sub resolve_period_yesterday {
     return enclosing_day($time);
 }
 
+sub resolve_period_week {
+    my ($time, $period) = @_;
+    return if $period ne 'this week';
+    return enclosing_week($time);
+}
+
 # a helper subroutine for 'today', 'yesterday', etc.  It finds the
 # day which includes the given time and returns the starting and ending
 # second of that day.
@@ -85,6 +92,29 @@ sub enclosing_day {
     @begin_parts = @end_parts = localtime($time);
     @begin_parts[ 0, 1, 2 ] = (  0,  0,  0 );    # beginning of the day
     @end_parts[   0, 1, 2 ] = ( 59, 59, 23 );    # end of the day
+
+    # convert the date parts back into epoch seconds
+    require Time::Local;
+    return (
+        Time::Local::timelocal(@begin_parts),
+        Time::Local::timelocal(@end_parts)
+    );
+}
+
+# similar to enclosing_day, but it finds the enclosing week
+sub enclosing_week {
+    my ($time) = @_;
+
+    # find the preceding Monday at midnight
+    my $wday = ( localtime $time )[6];
+    my $monday = $time - 24*60*60 * ( ( $wday + 6 ) % 7 );    # make Monday=0
+	my @begin_parts = localtime($monday);
+    @begin_parts[ 0, 1, 2 ] = ( 0, 0, 0 );
+
+    # find the end of the following Sunday
+	my $sunday = $monday + 24*60*60 * 6;
+	my @end_parts = localtime($sunday);
+    @end_parts[ 0, 1, 2 ] = ( 59, 59, 23 );
 
     # convert the date parts back into epoch seconds
     require Time::Local;
