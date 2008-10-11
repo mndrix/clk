@@ -62,16 +62,7 @@ sub resolve_period_today {
     my ($time, $period) = @_;
     return if lc($period) ne 'today';
 
-    my ( @begin_parts, @end_parts );
-    @begin_parts = @end_parts = localtime($time);
-    @begin_parts[ 0, 1, 2 ] = (  0,  0,  0 );    # beginning of the day
-    @end_parts[   0, 1, 2 ] = ( 59, 59, 23 );    # end of the day
-
-    require Time::Local;
-    return (
-        Time::Local::timelocal(@begin_parts),
-        Time::Local::timelocal(@end_parts)
-    );
+    return enclosing_day($time);
 }
 
 sub resolve_period_yesterday {
@@ -80,13 +71,22 @@ sub resolve_period_yesterday {
 
     # go back to this exact time yesterday (who needs leap seconds?)
     $time -= 24*60*60;
+    return enclosing_day($time);
+}
 
-    # then choose the beginning and ending of that day
+# a helper subroutine for 'today', 'yesterday', etc.  It finds the
+# day which includes the given time and returns the starting and ending
+# second of that day.
+sub enclosing_day {
+    my ($time) = @_;
+
+    # choose the beginning and ending seconds of the day
     my ( @begin_parts, @end_parts );
     @begin_parts = @end_parts = localtime($time);
     @begin_parts[ 0, 1, 2 ] = (  0,  0,  0 );    # beginning of the day
     @end_parts[   0, 1, 2 ] = ( 59, 59, 23 );    # end of the day
 
+    # convert the date parts back into epoch seconds
     require Time::Local;
     return (
         Time::Local::timelocal(@begin_parts),
