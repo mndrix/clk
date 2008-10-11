@@ -45,6 +45,7 @@ sub resolve_period {
     # a list of coderefs for handling date periods
     my @handlers = (
         \&resolve_period_today,
+        \&resolve_period_yesterday,
     );
 
     # ask each handler if it understands this pattern
@@ -59,8 +60,28 @@ sub resolve_period {
 
 sub resolve_period_today {
     my ($time, $period) = @_;
-    return if $period !~ m/^today$/i;
+    return if lc($period) ne 'today';
 
+    my ( @begin_parts, @end_parts );
+    @begin_parts = @end_parts = localtime($time);
+    @begin_parts[ 0, 1, 2 ] = (  0,  0,  0 );    # beginning of the day
+    @end_parts[   0, 1, 2 ] = ( 59, 59, 23 );    # end of the day
+
+    require Time::Local;
+    return (
+        Time::Local::timelocal(@begin_parts),
+        Time::Local::timelocal(@end_parts)
+    );
+}
+
+sub resolve_period_yesterday {
+    my ($time, $period) = @_;
+    return if lc($period) ne 'yesterday';
+
+    # go back to this exact time yesterday (who needs leap seconds?)
+    $time -= 24*60*60;
+
+    # then choose the beginning and ending of that day
     my ( @begin_parts, @end_parts );
     @begin_parts = @end_parts = localtime($time);
     @begin_parts[ 0, 1, 2 ] = (  0,  0,  0 );    # beginning of the day

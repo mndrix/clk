@@ -13,20 +13,20 @@ my @phrases = (
             '2007-10-08T23:59:59',   # expected to
         ],
     ],
-#   'yesterday' => [
-#       [
-#           '2007-10-08T21:33:40',   # base
-#           '2007-10-07T00:00:00',   # expected from
-#           '2007-10-07T23:59:59',   # expected to
-#       ],
-#   ],
-#   'yesterday' => [
-#       [
-#           '2008-01-01T22:44:18',   # base
-#           '2007-12-31T00:00:00',   # expected from
-#           '2007-12-31T23:59:59',   # expected to
-#       ],
-#   ],
+    'yesterday' => [
+        [
+            '2007-10-08T21:33:40',   # base
+            '2007-10-07T00:00:00',   # expected from
+            '2007-10-07T23:59:59',   # expected to
+        ],
+    ],
+    'yesterday' => [
+        [
+            '2008-01-01T22:44:18',   # base
+            '2007-12-31T00:00:00',   # expected from
+            '2007-12-31T23:59:59',   # expected to
+        ],
+    ],
 
 #   # names of the days of the week interpreted to be in the past
 #   'monday' => [
