@@ -9,7 +9,13 @@ use File::Path qw( rmtree );
 use File::chdir;
 use Time::Local qw( timegm );
 
-BEGIN { our @EXPORT = qw( clk_setup_test cmd_ok files_ok touch_file ) };
+BEGIN { our @EXPORT = qw(
+    clk_setup_test
+    cmd_ok
+    fake_time
+    files_ok
+    touch_file
+) };
 
 # import is_deeply without everything in Test::More::import()
 use Test::More ();
