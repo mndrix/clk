@@ -44,8 +44,7 @@ sub resolve_period {
 
     # a list of coderefs for handling date periods
     my @handlers = (
-        \&resolve_period_today,
-        \&resolve_period_yesterday,
+        \&resolve_period_day,
         \&resolve_period_week,
     );
 
@@ -59,19 +58,13 @@ sub resolve_period {
     die "Unknown period description: $period\n";
 }
 
-sub resolve_period_today {
+sub resolve_period_day {
     my ($time, $period) = @_;
-    return if lc($period) ne 'today';
+    $period = lc $period;
+    return if $period !~ m/^(yester|to)day$/;
 
-    return enclosing_day($time);
-}
+    if ( $1 eq 'yester' ) { $time -= 24*60*60 }
 
-sub resolve_period_yesterday {
-    my ($time, $period) = @_;
-    return if lc($period) ne 'yesterday';
-
-    # go back to this exact time yesterday (who needs leap seconds?)
-    $time -= 24*60*60;
     return enclosing_day($time);
 }
 
