@@ -1,0 +1,25 @@
+* implement 'last week' period
+* document the different timespec and periodspec formats in separate
+  documentation (currently they're documented inside the commands that
+  use them)
+
+* implement entry-search --period in terms of --between
+* each entry should record an 'identity' field for the person recording it
+  (this allows one person to pull entries from multiple people and run
+  handy reports on the result.  this probably means that each identity
+  needs his own set of timelines)
+* the timeline files should indicate a version number so that a new index
+  format can be implemented easily
+* clk rpt
+* clk edit
+
+
+# at some point we might want to do these too
+* implement a general language for specifying time periods.  A time period
+  can be specified as an amount of time to go backward from now followed by
+  a command for choosing the enclosing duration.  For instance 'yesterday'
+  means 'go back one day and choose the enclosing day'.  This could be
+  denoted in terms of timespecs by appending the duration with something
+  like '1d@d' meaning '1d = 1 day ago' and '@d = the enclosing day'
+* the timeline should use TAI64N to specify the time (to provide room for
+  growth should sub-second resolution ever be needed)
