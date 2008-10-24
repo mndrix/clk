@@ -96,7 +96,12 @@ sub resolve_period_week {
 
 sub resolve_period_month {
     my ($time, $period) = @_;
-    return if $period ne 'this month';
+    my ($which) = $period =~ m/^(this|last) month$/;
+    return if not $which;
+    if ( $which eq 'last' ) {
+        my $day = ( localtime $time )[3];
+        $time -= ( $day + 1 )*24*60*60;  # go back into the previous month
+    }
     return enclosing_month($time);
 }
 
