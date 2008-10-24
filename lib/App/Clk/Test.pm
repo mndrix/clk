@@ -7,7 +7,7 @@ use Test::Builder;
 use IPC::Open3 qw( open3 );
 use File::Path qw( rmtree );
 use File::chdir;
-use Time::Local qw( timegm );
+use Time::Local qw( timelocal timegm );
 
 BEGIN { our @EXPORT = qw(
     clk_setup_test
@@ -154,8 +154,11 @@ sub touch_file {
 sub fake_time {
     my ($iso) = @_;
     my @parts = split /[-T:Z]/, $iso;
-    $parts[1]--;
-    $ENV{CLK_TIME} = timegm( reverse @parts );
+    $parts[1]--;  # make the month zero-based
+    $ENV{CLK_TIME} = $iso =~ /Z$/
+                   ? timegm( reverse @parts )
+                   : timelocal( reverse @parts )
+                   ;
 
     return;
 }
