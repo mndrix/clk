@@ -19,8 +19,6 @@ my @phrases = (
             '2007-10-07T00:00:00',   # expected from
             '2007-10-07T23:59:59',   # expected to
         ],
-    ],
-    'yesterday' => [
         [
             '2008-01-01T22:44:18',   # base
             '2007-12-31T00:00:00',   # expected from
@@ -86,16 +84,12 @@ my @phrases = (
             '2008-09-01T00:00:00', # expected from
             '2008-09-07T23:59:59', # expected to
         ],
-    ],
-    'this week' => [  # crossing a month boundary
-        [
+        [  # crossing a month boundary
             '2008-10-03T12:34:56', # base
             '2008-09-29T00:00:00', # expected from
             '2008-10-05T23:59:59', # expected to
         ],
-    ],
-    'this week' => [  # includes a DST change
-        [
+        [  # includes a DST change
             '2007-11-02T02:00:00', # base
             '2007-10-29T00:00:00', # expected from
             '2007-11-04T23:59:59', # expected to
