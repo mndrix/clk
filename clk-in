@@ -110,7 +110,7 @@ clk-in - Begin recording time for a task
 
 =head1 SYNOPSIS
 
-B<clk in> [--at timespec] [--output-only] [text...]
+B<clk in> [--at instant] [--output-only] [text...]
 
 =head1 DESCRIPTION
 
@@ -122,14 +122,11 @@ considered part of the C<text>.
 
 =head1 OPTIONS
 
-=head2 --at timespec
+=head2 --at instant
 
 Instead of creating an entry with the current time, create an entry
-at the time specified by C<timespec>.  Valid timespecs are:
-
-    * a number of seconds since the epoch
-    * 'now' which indicates the current time
-    * a number of minutes in the past (such as "7m" for 7 minutes)
+at the time specified by C<instant>.  See L<specs> for a list of valid
+instant formats.
 
 C<--at> takes precedence over any time specified with the C<CLK_TIME>
 environment variable.

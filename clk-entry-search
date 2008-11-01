@@ -164,8 +164,7 @@ The entry ID for each matching entry is printed to STDOUT.
 =head2 --between begin end
 
 Search for entries with times between C<begin> and C<end> (inclusive).  Each
-argument should be a C<timespec> like those provided to clk-in's "--at"
-argument.
+argument should be a C<instant>.  See L<specs> for a list of valid formats.
 
 =head2 --output 'content'
 

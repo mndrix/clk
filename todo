@@ -1,6 +1,6 @@
-* document the different timespec and periodspec formats in separate
-  documentation (currently they're documented inside the commands that
-  use them)
+* write tests for resolve_timespec
+* implement 'this year' and 'last year' periods
+* rename 'timespec' to 'instant' and 'periodspec' to 'period' in the code
 
 * implement entry-search --period in terms of --between
 * each entry should record an 'identity' field for the person recording it
