@@ -95,6 +95,18 @@ my @phrases = (
             '2007-11-04T23:59:59', # expected to
         ],
     ],
+    'last week' => [
+        [
+            '2006-12-28T21:33:40',   # base
+            '2006-12-18T00:00:00',   # expected from
+            '2006-12-24T23:59:59',   # expected to
+        ],
+        [
+            '2007-01-19T10:07:22',   # base
+            '2007-01-08T00:00:00',   # expected from
+            '2007-01-14T23:59:59',   # expected to
+        ],
+    ],
 
     # month sized date ranges
     'this month' => [
@@ -128,7 +140,7 @@ my @phrases = (
     ],
 );
 
-plan tests => 38;
+plan tests => 42;
 
 while ( my ($phrase, $tests) = splice(@phrases, 0, 2) ) {
     for my $test (@$tests) {

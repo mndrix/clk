@@ -1,4 +1,3 @@
-* implement 'last week' period
 * document the different timespec and periodspec formats in separate
   documentation (currently they're documented inside the commands that
   use them)

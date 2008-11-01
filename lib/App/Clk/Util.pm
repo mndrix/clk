@@ -90,7 +90,11 @@ sub resolve_period_day {
 
 sub resolve_period_week {
     my ($time, $period) = @_;
-    return if $period ne 'this week';
+    my ($which) = $period =~ m/^(this|last) week$/;
+    return if not $which;
+    if ( $which eq 'last' ) {
+        $time -= 7*24*60*60;  # go back into the previous week
+    }
     return enclosing_week($time);
 }
 
