@@ -7,10 +7,13 @@
   (this allows one person to pull entries from multiple people and run
   handy reports on the result.  this probably means that each identity
   needs his own set of timelines)
-* the timeline files should indicate a version number so that a new index
+
+* the timeline filenames should indicate a version number so that a new index
   format can be implemented easily
+
 * clk rpt
 * clk edit
+* clk in /something-rare (clk in by searching for a template)
 
 
 # at some point we might want to do these too
