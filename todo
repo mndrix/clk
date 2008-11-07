@@ -1,4 +1,3 @@
-* write tests for resolve_timespec
 * implement 'this year' and 'last year' periods
 * rename 'timespec' to 'instant' and 'periodspec' to 'period' in the code
 
