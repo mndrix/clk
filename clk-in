@@ -13,8 +13,9 @@ while ( $i <= $#ARGV ) {
     if ( $ARGV[$i] eq '--at' ) {
         die "--at requires an argument\n" if $i + 1 > $#ARGV;
         my $timespec = $ARGV[ $i + 1 ];
-        $time = resolve_timespec($timespec);
-        die "Invalid timespec for --at: $timespec\n" if not $time;
+        local $@;
+        $time = eval { resolve_timespec($timespec) };
+        die "Invalid timespec for --at: $timespec\n" if not defined $time;
         splice @ARGV, $i, 2;    # remove the processed arguments
         next;
     }

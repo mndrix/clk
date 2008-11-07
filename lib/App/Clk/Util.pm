@@ -34,7 +34,8 @@ sub resolve_timespec {
     return $time           if $string eq 'now';
     return $string         if $string =~ m/^\d+$/;     # epoch seconds
     return $time - 60 * $1 if $string =~ m/^(\d+)m/;
-    return;
+
+    die "Unknown instant description: $string\n";
 }
 
 sub resolve_period {
