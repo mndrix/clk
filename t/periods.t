@@ -3,7 +3,6 @@ use warnings;
 use Test::More;
 use App::Clk::Test;
 use App::Clk::Util qw( resolve_period );
-use POSIX qw( strftime );
 
 my @phrases = (
     'today' => [
@@ -158,11 +157,4 @@ while ( my ($phrase, $tests) = splice(@phrases, 0, 2) ) {
     my $scalar = eval { resolve_period('invalid period description') };
     like( $@, qr/^Unknown period description:/, 'invalid period exception' );
     is( $scalar, undef, 'invalid period in scalar context' );
-}
-
-
-sub iso {
-    my ($time) = @_;
-    return q{} if not $time;
-    return strftime( "%Y-%m-%dT%H:%M:%S", localtime($time) );
 }

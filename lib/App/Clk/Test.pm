@@ -7,6 +7,7 @@ use Test::Builder;
 use IPC::Open3 qw( open3 );
 use File::Path qw( rmtree );
 use File::chdir;
+use POSIX qw( strftime );
 use Time::Local qw( timelocal timegm );
 
 BEGIN { our @EXPORT = qw(
@@ -14,6 +15,7 @@ BEGIN { our @EXPORT = qw(
     cmd_ok
     fake_time
     files_ok
+    iso
     touch_file
 ) };
 
@@ -161,6 +163,12 @@ sub fake_time {
                    ;
 
     return;
+}
+
+sub iso {
+    my ($time) = @_;
+    return q{} if not $time;
+    return strftime( "%Y-%m-%dT%H:%M:%S", localtime($time) );
 }
 
 1;
