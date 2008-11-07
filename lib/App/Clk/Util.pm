@@ -48,6 +48,7 @@ sub resolve_period {
         \&resolve_period_day,
         \&resolve_period_week,
         \&resolve_period_month,
+        \&resolve_period_year,
     );
 
     # ask each handler if it understands this pattern
@@ -108,6 +109,21 @@ sub resolve_period_month {
         $time -= ( $day + 1 )*24*60*60;  # go back into the previous month
     }
     return enclosing_month($time);
+}
+
+sub resolve_period_year {
+    my ($time, $period) = @_;
+    my ($which) = $period =~ m/^(this|last) year$/;
+    return if not $which;
+    if ( $which eq 'last' ) {
+        my @parts = localtime $time;
+        $parts[5]--;    # go back one year
+        $parts[3] = 1;  # first day (to avoid leap day problems)
+        $parts[0] = 0;  # first second (to avoid leap second problems)
+        require Time::Local;
+        $time = Time::Local::timelocal(@parts);
+    }
+    return enclosing_year($time);
 }
 
 # a helper subroutine for 'today', 'yesterday', etc.  It finds the
@@ -176,6 +192,26 @@ sub enclosing_month {
     # convert the date parts back into epoch seconds
     return (
         $first_day,
+        Time::Local::timelocal(@end_parts)
+    );
+}
+
+# similar to enclosing_day, but it finds the enclosing year
+sub enclosing_year {
+    my ($time) = @_;
+
+    # find the first day of the year
+    my @begin_parts = localtime($time);
+    @begin_parts[ 0, 1, 2, 3, 4 ] = ( 0, 0, 0, 1, 0 );
+
+    # find the last day of the year
+    my @end_parts = @begin_parts;
+    @end_parts[ 0, 1, 2, 3, 4 ] = ( 59, 59, 23, 31, 11 );
+
+    # convert the date parts back into epoch seconds
+    require Time::Local;
+    return (
+        Time::Local::timelocal(@begin_parts),
         Time::Local::timelocal(@end_parts)
     );
 }

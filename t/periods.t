@@ -137,9 +137,35 @@ my @phrases = (
             '2008-02-29T23:59:59',   # expected to
         ],
     ],
+
+    # year sized date ranges
+    'this year' => [
+        [
+            '2006-12-28T21:33:40',  # base
+            '2006-01-01T00:00:00',   # expected from
+            '2006-12-31T23:59:59',   # expected to
+        ],
+        [
+            '2007-01-19T10:07:22',   # base
+            '2007-01-01T00:00:00',   # expected from
+            '2007-12-31T23:59:59',   # expected to
+        ],
+    ],
+    'last year' => [
+        [
+            '2006-12-28T21:33:40',  # base
+            '2005-01-01T00:00:00',   # expected from
+            '2005-12-31T23:59:59',   # expected to
+        ],
+        [
+            '2007-01-19T10:07:22',   # base
+            '2006-01-01T00:00:00',   # expected from
+            '2006-12-31T23:59:59',   # expected to
+        ],
+    ],
 );
 
-plan tests => 42;
+plan tests => 50;
 
 while ( my ($phrase, $tests) = splice(@phrases, 0, 2) ) {
     for my $test (@$tests) {

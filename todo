@@ -1,5 +1,3 @@
-* implement 'this year' and 'last year' periods
-
 * implement entry-search --period in terms of --between
 * each entry should record an 'identity' field for the person recording it
   (this allows one person to pull entries from multiple people and run
