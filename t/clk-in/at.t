@@ -13,7 +13,7 @@ $ ./clk in --at
 ...
 cmd_ok <<'...';
 $ ./clk in --at jjjjjjjjj
-! Invalid timespec for --at: jjjjjjjjj
+! Invalid instant for --at: jjjjjjjjj
 ? 255
 ...
 

@@ -70,7 +70,7 @@ $ ./clk entry-search --between 1223350315 1223350590
 > 5bfe463af508c92b05d5c3c62379e7f8a73317f2
 ...
 
-# search for some entries with a non-epoch timespec
+# search for some entries with a non-epoch instant
 cmd_ok <<'...', { at => '2008-10-07T03:37:00Z' };
 $ ./clk entry-search --between 5m now
 > 951cf39364677d67a28c519a08578184c75d5f52

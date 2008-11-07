@@ -28,7 +28,7 @@ sub clk_root {
 #   * a number of seconds since the epoch
 #   * a number followed by the letter "m" indicates a number of
 #     minutes in the past
-sub resolve_timespec {
+sub resolve_instant {
     my ($string) = @_;
     my $time = $ENV{CLK_TIME} || time;
     return $time           if $string eq 'now';

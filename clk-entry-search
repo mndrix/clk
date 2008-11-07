@@ -19,8 +19,8 @@ while ( $i <= $#ARGV ) {
     elsif ( $ARGV[$i] eq '--between' ) {
         die "--between requires two arguments\n" if $i + 2 > $#ARGV;
         require App::Clk::Util;
-        $begin = App::Clk::Util::resolve_timespec( $ARGV[ $i + 1 ] );
-        $end   = App::Clk::Util::resolve_timespec( $ARGV[ $i + 2 ] );
+        $begin = App::Clk::Util::resolve_instant( $ARGV[ $i + 1 ] );
+        $end   = App::Clk::Util::resolve_instant( $ARGV[ $i + 2 ] );
         splice @ARGV, $i, 3;    # remove the processed arguments
         next;
     }

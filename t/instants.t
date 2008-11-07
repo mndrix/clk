@@ -2,7 +2,7 @@ use strict;
 use warnings;
 use Test::More;
 use App::Clk::Test;
-use App::Clk::Util qw( resolve_timespec );
+use App::Clk::Util qw( resolve_instant );
 
 my @phrases = (
     'now' => [
@@ -44,14 +44,14 @@ while ( my ($phrase, $tests) = splice(@phrases, 0, 2) ) {
         my ($base, $expected) = @$test;
         fake_time($base);
 
-        my $got = resolve_timespec($phrase);
+        my $got = resolve_instant($phrase);
         is( iso($got), $expected, "$phrase ok" );
     }
 }
 
 # test for some failure conditions
 {
-    my $scalar = eval { resolve_timespec('invalid instant') };
+    my $scalar = eval { resolve_instant('invalid instant') };
     like( $@, qr/^Unknown instant description:/, 'invalid instant exception' );
     is( $scalar, undef, 'invalid instant in scalar context' );
 }

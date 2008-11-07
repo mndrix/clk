@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use lib 'lib';  # uses 100+ system calls, yuck
 use IPC::Open2;
-use App::Clk::Util qw( clk_root resolve_timespec );
+use App::Clk::Util qw( clk_root resolve_instant );
 
 # process command line arguments
 my $storing_entry = 1;
@@ -12,10 +12,10 @@ my $i = 0;
 while ( $i <= $#ARGV ) {
     if ( $ARGV[$i] eq '--at' ) {
         die "--at requires an argument\n" if $i + 1 > $#ARGV;
-        my $timespec = $ARGV[ $i + 1 ];
+        my $instant = $ARGV[ $i + 1 ];
         local $@;
-        $time = eval { resolve_timespec($timespec) };
-        die "Invalid timespec for --at: $timespec\n" if not defined $time;
+        $time = eval { resolve_instant($instant) };
+        die "Invalid instant for --at: $instant\n" if not defined $time;
         splice @ARGV, $i, 2;    # remove the processed arguments
         next;
     }
