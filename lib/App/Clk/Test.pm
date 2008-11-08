@@ -36,6 +36,11 @@ sub clk_setup_test {
         fake_time($iso);
     }
 
+    # create some sample data, if necessary
+    if ( $args->{make_data} ) {
+        generate_test_data();
+    }
+
     # clean up after ourselves
     END {
         rmtree('t/_clk') if !$ENV{DEBUG} && -d 't/_clk';
@@ -56,6 +61,7 @@ sub cmd_ok {
     my ( $cmd, @input, @output, @error );
     my $exit = 0;    # assume they want success, unless otherwise indicated
     for my $line (@lines) {
+        $line =~ s/^\s+//;
         my ($type, $content) = $line =~ m/^([\$<>!?])\s*(.*)$/;
         if    ( $type eq '$' ) { $cmd       =  $content }
         elsif ( $type eq '<' ) { push @input,  $content }
@@ -89,13 +95,25 @@ sub cmd_ok {
     $got_exit = $? >> 8;
 
     $got_output = '' if not defined $got_output;
-    is_deeply( [ split /\n/, $got_output, -1 ], \@output, "$cmd : stdout" );
+    is_deeply( [ split /\n/, $got_output, -1 ], \@output, "$cmd : stdout" )
+        unless $args->{skip_tests};
     $got_error = '' if not defined $got_error;
-    is_deeply( [ split /\n/, $got_error,  -1 ], \@error,  "$cmd : stderr" );
-    $Test->cmp_ok( $got_exit, '==', $exit, "$cmd : exit code" );
+    is_deeply( [ split /\n/, $got_error,  -1 ], \@error,  "$cmd : stderr" )
+        unless $args->{skip_tests};
+    $Test->cmp_ok( $got_exit, '==', $exit, "$cmd : exit code" )
+        unless $args->{skip_tests};
 
     return;
 }
+
+# the same as cmd_ok, but don't run the tests
+sub cmd {
+    my $spec = shift;
+    my $args = shift || {};
+    $args->{skip_tests} = 1;
+    cmd_ok($spec, $args);
+}
+
 
 # examine a filesystem for file and contents
 sub files_ok {
@@ -169,6 +187,44 @@ sub iso {
     my ($time) = @_;
     return q{} if not $time;
     return strftime( "%Y-%m-%dT%H:%M:%S", localtime($time) );
+}
+
+sub generate_test_data {
+
+    # create some entries to use for testing
+    cmd <<'...';   # 2008-10-07T03:36:06Z
+    $ ./clk in --at 1223350566
+    > 66c9b5ba2c335a34e42ce194944b529c391df9de
+...
+    cmd <<'...';   # 2008-10-07T03:36:30Z
+    $ ./clk in --at 1223350590
+    > 5bfe463af508c92b05d5c3c62379e7f8a73317f2
+...
+    cmd <<'...';   # 2008-10-08T03:36:06Z
+    $ ./clk in --at 1223436966
+    > e51261ef2cacb06ff7704da7587e7ebf8d44b19b
+...
+
+    # create entries in a second timeline
+    cmd <<'...';   # 2008-10-07T03:33:50Z
+    $ ./clk in --at 1223350430
+    > 235843b6de92528e47a21598be7f350aea5b1a04
+...
+    cmd <<'...';   # 2008-10-07T03:33:59Z
+    $ ./clk in --at 1223350439
+    > a38dc7e581bb22b3add7092952d6b4915ce8ba3c
+...
+
+    # create entries in a third timeline
+    cmd <<'...';   # 2008-10-07T03:31:50Z
+    $ ./clk in --at 1223350310
+    > a9aef841af1b731b65bf172072952e1cad06503b
+...
+    cmd <<'...';   # 2008-10-07T03:32:00Z
+    $ ./clk in --at 1223350320
+    > 951cf39364677d67a28c519a08578184c75d5f52
+...
+
 }
 
 1;
