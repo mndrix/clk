@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 24;
+use Test::More tests => 27;
 use App::Clk::Test;
 
 clk_setup_test({ make_data => 1 });
@@ -50,7 +50,7 @@ $ ./clk entry-search --between 3m now
 > 5bfe463af508c92b05d5c3c62379e7f8a73317f2
 ...
 
-# try a couple error conditions
+# try some error conditions
 cmd_ok <<'...';
 $ ./clk entry-search --between
 ! --between requires two arguments
@@ -59,5 +59,10 @@ $ ./clk entry-search --between
 cmd_ok <<'...';
 $ ./clk entry-search --between 1223350580
 ! --between requires two arguments
+? 255
+...
+cmd_ok <<'...';
+$ ./clk entry-search --between 1223350580 not-an-instant
+! 'not-an-instant' is not a valid instant
 ? 255
 ...

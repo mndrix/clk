@@ -19,8 +19,13 @@ while ( $i <= $#ARGV ) {
     elsif ( $ARGV[$i] eq '--between' ) {
         die "--between requires two arguments\n" if $i + 2 > $#ARGV;
         require App::Clk::Util;
-        $begin = App::Clk::Util::resolve_instant( $ARGV[ $i + 1 ] );
-        $end   = App::Clk::Util::resolve_instant( $ARGV[ $i + 2 ] );
+        local $@;
+        my $arg = $ARGV[ $i + 1 ];
+        $begin = eval { App::Clk::Util::resolve_instant($arg) };
+        die "'$arg' is not a valid instant\n" if not defined $begin;
+        $arg = $ARGV[ $i + 2 ];
+        $end   = eval { App::Clk::Util::resolve_instant($arg) };
+        die "'$arg' is not a valid instant\n" if not defined $end;
         splice @ARGV, $i, 3;    # remove the processed arguments
         next;
     }
