@@ -1,4 +1,6 @@
-* implement entry-search --period in terms of --between
+* fix entry-search --period tests so that they pass regardless of the
+  user's time zone
+
 * each entry should record an 'identity' field for the person recording it
   (this allows one person to pull entries from multiple people and run
   handy reports on the result.  this probably means that each identity

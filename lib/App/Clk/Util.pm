@@ -38,6 +38,16 @@ sub resolve_instant {
     die "Unknown instant description: $string\n";
 }
 
+=head2 resolve_period
+
+Given an English-language description of a period of time, it returns two
+times in epoch seconds.  The first time is the starting time of the period.
+The second time is the ending time of the period.
+
+If the period description is not recognized, an exception is thrown.
+
+=cut
+
 sub resolve_period {
     my ($period) = shift;
     $period = q{} if not defined $period;
