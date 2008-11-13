@@ -163,9 +163,18 @@ my @phrases = (
             '2006-12-31T23:59:59',   # expected to
         ],
     ],
+
+    # unix eternity
+    'ever' => [
+        [
+            '2008-11-11T18:59:43',   # base
+            '1969-12-31T17:00:00',   # expected from
+            '2038-01-18T20:14:07',   # expected to
+        ],
+    ],
 );
 
-plan tests => 50;
+plan tests => 52;
 
 while ( my ($phrase, $tests) = splice(@phrases, 0, 2) ) {
     for my $test (@$tests) {

@@ -185,7 +185,7 @@ sub fake_time {
 
 sub iso {
     my ($time) = @_;
-    return q{} if not $time;
+    return q{} if not defined $time;
     return strftime( "%Y-%m-%dT%H:%M:%S", localtime($time) );
 }
 

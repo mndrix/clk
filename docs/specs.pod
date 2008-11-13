@@ -81,3 +81,8 @@ The month which includes the current time.
 =head2 last month
 
 The month preceding the current one.
+
+=head2 ever
+
+All time addressable with Unix epoch times.
+

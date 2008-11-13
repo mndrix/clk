@@ -59,6 +59,7 @@ sub resolve_period {
         \&resolve_period_week,
         \&resolve_period_month,
         \&resolve_period_year,
+        \&resolve_period_ever,
     );
 
     # ask each handler if it understands this pattern
@@ -134,6 +135,14 @@ sub resolve_period_year {
         $time = Time::Local::timelocal(@parts);
     }
     return enclosing_year($time);
+}
+
+sub resolve_period_ever {
+    my ($time, $period) = @_;
+    $period = lc $period;
+    return if $period ne 'ever';
+
+    return ( 0, 2**31-1 );
 }
 
 # a helper subroutine for 'today', 'yesterday', etc.  It finds the
