@@ -82,6 +82,14 @@ The month which includes the current time.
 
 The month preceding the current one.
 
+=head2 this year
+
+The year which includes the current day.
+
+=head2 last year
+
+The year preceding L</this year>.
+
 =head2 ever
 
 All time addressable with Unix epoch times.
