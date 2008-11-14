@@ -3,6 +3,10 @@
   handy reports on the result.  this probably means that each identity
   needs his own set of timelines)
 
+* factor out all the places that do "my $hash = substr $foo, 0, 2" into
+  a single subroutine using printf escapes like:
+  my $path = hashed_path( $sha, '%r/timelines/%h/foo.txt' )
+
 * the timeline filenames should indicate a version number so that a new index
   format can be implemented easily
 
