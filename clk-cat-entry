@@ -1,0 +1,46 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use App::Clk::Util qw( clk_root );
+
+my $entry_id = shift or die "You must specify an entry ID\n";
+my $hash = substr $entry_id, 0, 2;
+my $rest = substr $entry_id, 2;
+my $root = clk_root();
+my $entry_filename = "$root/entries/$hash/$rest";
+if ( not -e $entry_filename ) {
+    warn "No such entry\n" ;
+    exit 1;
+}
+open my $entry_fh, '<', $entry_filename
+    or die "Could not open entry in $entry_filename: $!\n";
+my $entry = do { local $/; <$entry_fh> };
+print $entry;
+close $entry_fh;
+
+exit;
+
+__END__
+
+=head1 NAME
+
+clk-cat-entry - Display the contents of an entry
+
+=head1 SYNOPSIS
+
+B<clk cat-entry> entry_id
+
+=head1 DESCRIPTION
+
+Displays the contents of the entry whose ID is C<entry_id>
+
+=head1 OPTIONS
+
+None
+
+=head1 EXIT CODES
+
+ 0   - The entry was found
+ 1   - No matching entries were found
+ 255 - Improper invocation or another error was encountered.
+       Details are provided on stderr.
