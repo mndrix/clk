@@ -2,15 +2,17 @@
 use strict;
 use warnings;
 use lib 'lib';  # requires 100+ system calls, yuck
-use App::Clk::Util qw( clk_root );
+use App::Clk::Util qw( clk_root timeline_root );
 sub lock_file ($&);  # predeclare for some nicer syntax
 
 my $root = clk_root();
 
-# parse the input for an entry time (assume the input is well-formed)
+# parse the input for necessary fields
 my $entry = do { local $/; <STDIN> };
 my $entry_time = extract_entry_time(\$entry)
     or die "No valid time in the entry\n";
+my $user_identity = extract_entry_user_identity(\$entry)
+    or die "No valid user identity in the entry\n";
 
 # store the entry itself before linking it into the timeline
 my $entry_id = calculate_entry_id(\$entry);
@@ -24,9 +26,15 @@ print {$entry_fh} $entry;
 close $entry_fh;
 
 # look through each timeline for one that can hold this entry
-my $timelines_dir = "$root/timelines";
-mkdir $timelines_dir if not -e $timelines_dir;
-my @timelines = reverse sort glob("$timelines_dir/*");
+my $timelines_dir = timeline_root($user_identity);
+my @timelines;
+if ( -e $timelines_dir ) {
+    @timelines = reverse sort glob("$timelines_dir/*");
+}
+else {
+    require File::Path;
+    File::Path::mkpath($timelines_dir);
+}
 TIMELINE:
 for my $timeline (@timelines) {
     next TIMELINE if $timeline !~ m{^$timelines_dir/([0-9a-f]+)$}; # hex names
@@ -82,6 +90,15 @@ sub extract_entry_time {
     $parts[1]--;  # 0-based month
     my $time = Time::Local::timegm( reverse @parts );
     return sprintf '%08x', $time;
+}
+
+sub extract_entry_user_identity {
+    my ($entry_ref) = @_;
+    my ($user_identity) = $$entry_ref =~ m{
+        ^ identity \s*
+        : \s* ([^\n]+)
+        $ }xms;
+    return $user_identity;
 }
 
 sub calculate_entry_id {

@@ -94,11 +94,11 @@ sub search_by_time {
     our $begin;
     our $end;
     require App::Clk::Util;
-    my $root = App::Clk::Util::clk_root();
 
     # open all the timelines
+    my $timeline_root = App::Clk::Util::timeline_root( $ENV{CLK_IDENTITY} );
     my @timelines;
-    while ( my $timeline_filename = glob("$root/timelines/*") ) {
+    while ( my $timeline_filename = glob("$timeline_root/*") ) {
         open my $fh, '<', $timeline_filename
             or die "Couldn't open timeline $timeline_filename: $!\n";
         push @timelines, $fh;
@@ -147,6 +147,7 @@ sub search_by_time {
         my $entry_id = $earliest->[1];
         my $hash = substr $entry_id, 0, 2;
         my $rest = substr $entry_id, 2;
+        my $root = App::Clk::Util::clk_root();
         emit("$root/entries/$hash/$rest");
 
         # find the next match in the timeline that provided the earliest

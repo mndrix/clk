@@ -8,13 +8,13 @@ clk_setup_test({ make_data => 1 });
 # search for all entries by using a period description
 cmd_ok <<'...', { at => '2008-10-07T03:37:00Z' };
 $ ./clk entry-search --period ever
-> a9aef841af1b731b65bf172072952e1cad06503b
-> 951cf39364677d67a28c519a08578184c75d5f52
-> 235843b6de92528e47a21598be7f350aea5b1a04
-> a38dc7e581bb22b3add7092952d6b4915ce8ba3c
-> 66c9b5ba2c335a34e42ce194944b529c391df9de
-> 5bfe463af508c92b05d5c3c62379e7f8a73317f2
-> e51261ef2cacb06ff7704da7587e7ebf8d44b19b
+> 489931bdd0314f6bd84fe735326a9be8fe8c721c
+> 053b5c718fb4935dbea789e49600e9abe043a1ea
+> 241af75967962f66faad9df1d4bf2780c6da91c5
+> 8d9fd3f3f02147a205a789fd23513fb53ae5fb50
+> cf0b2824e2c9f3a4736c0f8a6e0bb5e208f67d98
+> 0422f139d6becb2a1451b3f2228f4bf633098900
+> dbe3e01151ad7734842e353b9fea5668f1c6e75f
 ...
 
 # try a couple error conditions

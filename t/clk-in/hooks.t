@@ -11,6 +11,7 @@ my $root = clk_setup_test({
 my $no_hooks = <<'...';
 $ ./clk in --output-only whatever
 > time: 2008-03-19T12:34:56Z
+> identity: tester@example.org
 > text: whatever
 ...
 cmd_ok $no_hooks;
@@ -28,6 +29,7 @@ print "arguments: \@ARGV\n";
 cmd_ok <<'...';
 $ ./clk in --output-only whatever
 > time: 2008-03-19T12:34:56Z
+> identity: tester@example.org
 > arguments: whatever
 ...
 

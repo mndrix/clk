@@ -10,7 +10,14 @@ commands they influence and how.
 
 =head1 VARIABLES
 
-=head1 CLK_ROOT
+=head2 CLK_IDENTITY
+
+Each person using clk should choose a string to identify himself.  The content
+of the string doesn't matter particularly as long as it uniquely identifies
+the user.  Good identities include email addresses and URLs.  If one uses
+OpenID, one's OpenID URL might be appropriate.
+
+=head2 CLK_ROOT
 
 Contains a filesystem path to a directory which should be used
 to store all of clk's data.  clk sets this variable to

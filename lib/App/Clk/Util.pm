@@ -14,11 +14,24 @@ sub import {
     return;
 }
 
+# returns the path of the root of the clk directory
 sub clk_root {
     my $root = $ENV{CLK_ROOT}
         or die "Please set CLK_ROOT before using clk\n";
     die "CLK_ROOT=$root is not a directory\n" if not -d $root;
     return $root;
+}
+
+# given a single user identity, returns the path of the root of the timeline
+# directory
+sub timeline_root {
+    my ($user_identity) = @_;
+    my $root = clk_root();
+    require Digest::SHA1;
+    my $user_hash = Digest::SHA1::sha1_hex($user_identity);
+    my $hash = substr $user_hash, 0, 2;
+    my $rest = substr $user_hash, 2;
+    return "$root/timelines/$hash/$rest";
 }
 
 # given a string representation of an instant in time, it returns

@@ -11,12 +11,14 @@ clk_setup_test({
 cmd_ok <<'...';
 $ ./clk in --output-only
 > time: 2008-03-19T12:34:56Z
+> identity: tester@example.org
 ...
 
 # manually clocking out
 cmd_ok <<'...', { at => '2008-03-19T12:34:59Z' };
 $ ./clk in --output-only out
 > time: 2008-03-19T12:34:59Z
+> identity: tester@example.org
 > text: out
 ...
 
@@ -24,6 +26,7 @@ $ ./clk in --output-only out
 cmd_ok <<'...', { at => '2008-03-19T12:35:12Z' },
 $ ./clk-in how\'s this for "a message" --output-only
 > time: 2008-03-19T12:35:12Z
+> identity: tester@example.org
 > text: how's this for a message
 ...
 
@@ -32,12 +35,13 @@ $ ./clk-in how\'s this for "a message" --output-only
 # entry content, make sure that it can drive clk-store-entry
 cmd_ok <<'...', { at => '2008-04-12T06:10:49Z' };
 $ ./clk in etc etc etc
-> 95579fcee7ee1a61657a0fc50339e216c851c334
+> 0966e4c86773d3da8ec8b11ae77f5e7a00f5aaff
 ...
 files_ok <<'...';
-entries/95/579fcee7ee1a61657a0fc50339e216c851c334
+entries/09/66e4c86773d3da8ec8b11ae77f5e7a00f5aaff
     time: 2008-04-12T06:10:49Z
+    identity: tester@example.org
     text: etc etc etc
-timelines/48005269
-    48005269 95579fcee7ee1a61657a0fc50339e216c851c334
+timelines/77/d4c7b0bed8729699f21bf194d533f6c6515eac/48005269
+    48005269 0966e4c86773d3da8ec8b11ae77f5e7a00f5aaff
 ...

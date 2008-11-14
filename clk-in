@@ -77,6 +77,8 @@ my @parts = (gmtime $time)[ 0 .. 5];
 $parts[4]++;  # use human-readable day
 $parts[5] += 1900; # ... and year
 printf {$writer} "time: %04d-%02d-%02dT%02d:%02d:%02dZ\n", reverse @parts;
+printf {$writer} "identity: %s\n", $ENV{CLK_IDENTITY}
+    unless defined($entry_text) and $entry_text =~ m/^identity:/xms;
 print {$writer} $entry_text if defined $entry_text;
 
 # if storing the entry, output its entry ID

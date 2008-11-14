@@ -31,6 +31,9 @@ sub clk_setup_test {
     $ENV{CLK_ROOT} = 't/_clk';
     mkdir 't/_clk' if not -d 't/_clk';
 
+    # create a testing identity
+    $ENV{CLK_IDENTITY} = 'tester@example.org';
+
     # establish a fake time, if necessary
     if ( my $iso = $args->{fake_time} ) {
         fake_time($iso);

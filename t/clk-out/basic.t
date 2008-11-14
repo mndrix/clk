@@ -11,5 +11,6 @@ clk_setup_test({
 cmd_ok <<'...';
 $ ./clk out --output-only
 > time: 2008-03-19T12:34:56Z
+> identity: tester@example.org
 > text: out
 ...

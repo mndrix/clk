@@ -21,16 +21,19 @@ $ ./clk in --at jjjjjjjjj
 cmd_ok <<'...';
 $ ./clk in --at 1208030762 --output-only
 > time: 2008-04-12T20:06:02Z
+> identity: tester@example.org
 ...
 cmd_ok <<'...';
 $ ./clk in  --output-only --at 1208030762
 > time: 2008-04-12T20:06:02Z
+> identity: tester@example.org
 ...
 
 # using minutes
 cmd_ok <<'...', { at => '2008-04-12T20:06:02Z' };
 $ ./clk in --at 6m --output-only
 > time: 2008-04-12T20:00:02Z
+> identity: tester@example.org
 ...
 
 # The most fundamental argument for --at is a time in epoch
