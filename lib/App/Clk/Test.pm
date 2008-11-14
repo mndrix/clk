@@ -56,6 +56,7 @@ sub clk_setup_test {
 sub cmd_ok {
     my $spec = shift;
     my $args = shift || {};
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
     my $Test = Test::More->builder;
     my @lines = split m{\n}, $spec;
     fake_time( $args->{at} ) if $args->{at};
