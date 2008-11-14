@@ -7,6 +7,11 @@
   a single subroutine using printf escapes like:
   my $path = hashed_path( $sha, '%r/timelines/%h/foo.txt' )
 
+* clk fsck to verify data integrity.  this should traverse the timelines
+  to make sure that all reference entries exist.  it should also calculate
+  the SHA-256 value of the content of each entry and make sure that it matches
+  the entry ID
+
 * the timeline filenames should indicate a version number so that a new index
   format can be implemented easily
 
