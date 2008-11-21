@@ -29,9 +29,8 @@ sub timeline_root {
     my $root = clk_root();
     require Digest::SHA1;
     my $user_hash = Digest::SHA1::sha1_hex($user_identity);
-    my $hash = substr $user_hash, 0, 2;
-    my $rest = substr $user_hash, 2;
-    return "$root/timelines/$hash/$rest";
+
+    return hashed_path( $user_hash, '%r/timelines/%h' );
 }
 
 # given a string representation of an instant in time, it returns
@@ -246,6 +245,44 @@ sub enclosing_year {
         Time::Local::timelocal(@begin_parts),
         Time::Local::timelocal(@end_parts)
     );
+}
+
+=head2 hashed_path( $sha1, $template )
+
+    my $path = hashed_path( $sha1, '%r/entries/%h' );
+
+Returns an absolute path to the filesystem where part of the path is a hashed
+directory.  The hashed directory makes it possible to store many files within
+multiple subdirectories.  This makes certain filesystem opertions more
+efficient.
+
+C<$sha1> should be the SHA-1 hash of some value.  C<$template> is a template
+discribing how the hashed directory structure should be converted to a path.
+The template uses escapes similar to L<printf>.  Acceptable escapes are:
+
+=head3 %h
+
+The hashed directory component.  If C<$sha1> were
+f1d2d2f924e986ac86fdf7b36c94bcdf32beec15, this escape would expand to
+"f1/d2d2f924e986ac86fdf7b36c94bcdf32beec15"
+
+=head3 %r
+
+The root directory for storing clk content.  This is typically the first
+component in C<$template>.
+
+=cut
+
+sub hashed_path {
+    my ($sha1, $template) = @_;
+
+    my $hash = substr $sha1, 0, 2;
+    my $rest = substr $sha1, 2;
+
+    $template =~ s{%r}{clk_root()}eg;  # %r
+    $template =~ s{%h}{$hash/$rest}g;  # %h
+
+    return $template;
 }
 
 1;

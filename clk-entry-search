@@ -51,17 +51,18 @@ my $entry_id = shift or die "No entry ID given\n";
 die "A partial entry ID must be at least 3 characters long\n"
     if length($entry_id) < 3;
 
-my $hash = substr $entry_id, 0, 2;
-my $rest = substr $entry_id, 2;
-if ( length $rest == 38 ) {  # full entry ID
-    my $entry_filename = "$ENV{CLK_ROOT}/entries/$hash/$rest";
+require App::Clk::Util;
+if ( length $entry_id == 40 ) {  # full entry ID
+    my $entry_filename =
+      App::Clk::Util::hashed_path( $entry_id, '%r/entries/%h' );
     if ( -e $entry_filename ) {
         emit($entry_filename);
         exit;
     }
 }
 else {  # partial entry ID
-    my @entry_filenames = glob("$ENV{CLK_ROOT}/entries/$hash/$rest*");
+    my @entry_filenames =
+      glob( App::Clk::Util::hashed_path( $entry_id, '%r/entries/%h*' ) );
     if ( @entry_filenames > 1 ) {
         warn "The partial entry ID '$entry_id' is ambiguous\n";
         exit 2;
@@ -145,10 +146,7 @@ sub search_by_time {
 
         # emit the earliest entry that we found
         my $entry_id = $earliest->[1];
-        my $hash = substr $entry_id, 0, 2;
-        my $rest = substr $entry_id, 2;
-        my $root = App::Clk::Util::clk_root();
-        emit("$root/entries/$hash/$rest");
+        emit( App::Clk::Util::hashed_path( $entry_id, '%r/entries/%h' ) );
 
         # find the next match in the timeline that provided the earliest
         $matches[$earliest_index] = $next_match->($earliest_index);

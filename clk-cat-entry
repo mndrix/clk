@@ -1,13 +1,10 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use App::Clk::Util qw( clk_root );
+use App::Clk::Util qw( clk_root hashed_path );
 
 my $entry_id = shift or die "You must specify an entry ID\n";
-my $hash = substr $entry_id, 0, 2;
-my $rest = substr $entry_id, 2;
-my $root = clk_root();
-my $entry_filename = "$root/entries/$hash/$rest";
+my $entry_filename = hashed_path( $entry_id, '%r/entries/%h' );
 if ( not -e $entry_filename ) {
     warn "No such entry\n" ;
     exit 1;
