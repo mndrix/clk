@@ -1,16 +1,9 @@
 use strict;
 use warnings;
-use Test::More tests => 36;
+use Test::More tests => 33;
 use App::Clk::Test;
 
 clk_setup_test();
-
-# oops, forgot to provide an entry ID
-cmd_ok <<'...';
-$ ./clk entry-search
-! No entry ID given
-? 255
-...
 
 # searching by full entry ID works for existing entries
 touch_file('entries/ab/cdef0000000000000000000000000000000000');

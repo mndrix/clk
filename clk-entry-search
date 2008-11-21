@@ -47,7 +47,12 @@ while ( $i <= $#ARGV ) {
 search_by_time() if $begin or $end;
 
 # default to searching by entry ID
-my $entry_id = shift or die "No entry ID given\n";
+my $entry_id = shift;
+if ( not defined $entry_id ) {
+    require App::Clk::Util;
+    ( $begin, $end ) = App::Clk::Util::resolve_period('ever');
+    search_by_time();
+}
 die "A partial entry ID must be at least 3 characters long\n"
     if length($entry_id) < 3;
 
@@ -169,7 +174,8 @@ B<clk entry-search> [--output 'content'] [id_pattern]
 
 Searches for entries which have been created by L<clk-in>.  C<id_pattern> is
 either the 40 hexadecimal digit identifier for an entry or a unique prefix
-thereof.  The prefix must be at least 3 characters long.
+thereof.  If a prefix is given, it must be at least 3 characters long.  If no
+C<id_pattern> is provided, all matching entries are considered.
 
 The entry ID for each matching entry is printed to STDOUT.
 
