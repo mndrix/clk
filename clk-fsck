@@ -1,0 +1,12 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+
+open my $entries, 'clk entry-search|'
+  or die "Could not run 'entry-search'";
+while ( my $entry_id = <$entries> ) {
+    chomp $entry_id;
+
+    warn "Entry $entry_id is not a valid SHA-1 hash\n"
+        if $entry_id !~ m/^[0-9a-fA-F]{40}$/;
+}
