@@ -1,12 +1,35 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
+use App::Clk::Util qw( hashed_path );
+use Digest::SHA1 qw( sha1_hex );
 
 open my $entries, 'clk entry-search|'
   or die "Could not run 'entry-search'";
 while ( my $entry_id = <$entries> ) {
     chomp $entry_id;
 
+    # does the entry ID look valid?
     warn "Entry $entry_id is not a valid SHA-1 hash\n"
         if $entry_id !~ m/^[0-9a-fA-F]{40}$/;
+
+    # does the entry have content in the filesystem?
+    my $filename = hashed_path( $entry_id, '%r/entries/%h' );
+    if ( not -e $filename ) {
+        warn "Entry $entry_id does not exist in the filesystem\n";
+        next;
+    }
+
+    # does the SHA1 match what we'd expect?
+    my $size = -s _;
+    my $content;
+    open my $fh, '<', $filename or die "Unable to open $filename: $!\n";
+    my $got = sysread $fh, $content, $size;
+    if ( $got != $size ) {
+        warn "Error reading $size bytes from $filename\n";
+        next;
+    }
+    if ( sha1_hex($content) ne $entry_id ) {
+        warn "Entry $entry_id is corrupt (SHA1 mismatch)\n";
+    }
 }
