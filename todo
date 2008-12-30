@@ -3,9 +3,6 @@
   the SHA-256 value of the content of each entry and make sure that it matches
   the entry ID
 
-* the timeline filenames should indicate a version number so that a new index
-  format can be implemented easily
-
 * clk rpt
 * clk edit
 * clk in /something-rare (clk in by searching for a template)
