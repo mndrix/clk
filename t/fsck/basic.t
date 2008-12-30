@@ -33,12 +33,12 @@ unlink $path;
 # mangle the timeline
 $path = (glob "$ENV{CLK_ROOT}/timelines/*/*/*")[0];
 open $fh, '>>', $path;
-print $fh "99999999 abcdefghijklmnopqrstuvwxyz\n";
+print $fh "jjjjjjjj abcdefghijklmnopqrstuvwxyz\n";
 close $fh;
 
 cmd_ok <<'...';
 $ ./clk fsck
+! Timeline entry is invalid: jjjjjjjj abcdefghijklmnopqrstuvwxyz
 ! Entry 489931bdd0314f6bd84fe735326a9be8fe8c721c is corrupt (SHA1 mismatch)
 ! Entry 053b5c718fb4935dbea789e49600e9abe043a1ea does not exist in the filesystem
-! Entry abcdefghijklmnopqrstuvwxyz is not a valid SHA-1 hash
 ...

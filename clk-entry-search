@@ -6,6 +6,7 @@ use warnings;
 my $outputting_content = 0;
 our $begin;
 our $end;
+our $fsck;
 my $i = 0;
 while ( $i <= $#ARGV ) {
     if ( $ARGV[$i] eq '--output' ) {
@@ -27,6 +28,11 @@ while ( $i <= $#ARGV ) {
         $end   = eval { App::Clk::Util::resolve_instant($arg) };
         die "'$arg' is not a valid instant\n" if not defined $end;
         splice @ARGV, $i, 3;    # remove the processed arguments
+        next;
+    }
+    elsif ( $ARGV[$i] eq '--fsck' ) {
+        $fsck = 1;
+        splice @ARGV, $i, 1;    # remove the processed arguments
         next;
     }
     elsif ( $ARGV[$i] eq '--period' ) {
@@ -122,6 +128,11 @@ sub search_by_time {
                 return;
             }
             chomp $line;
+            if ( $fsck and $line !~ m/^[0-9a-f]{8} [0-9a-f]{40}$/o ) {
+                # this line is mangled
+                warn "Timeline entry is invalid: $line\n";
+                redo LOOP;
+            }
             my ($hex_time, $entry_id) = split / /, $line;
             my $time = hex $hex_time;
             redo LOOP if $time < $begin;
@@ -185,6 +196,12 @@ The entry ID for each matching entry is printed to STDOUT.
 
 Search for entries with times between C<begin> and C<end> (inclusive).  Each
 argument should be a C<instant>.  See L<specs> for a list of valid formats.
+
+=head2 --fsck
+
+This option should typically not be used directly.  Instead, call C<clk fsck>
+to perform a variety of integrity checks.  When this option is used, it
+verifies the integrity of the timelines.
 
 =head2 --output 'content'
 

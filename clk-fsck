@@ -4,7 +4,7 @@ use warnings;
 use App::Clk::Util qw( hashed_path );
 use Digest::SHA1 qw( sha1_hex );
 
-open my $entries, 'clk entry-search|'
+open my $entries, 'clk entry-search --fsck|'
   or die "Could not run 'entry-search'";
 while ( my $entry_id = <$entries> ) {
     chomp $entry_id;
