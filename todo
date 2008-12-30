@@ -1,7 +1,6 @@
-* clk fsck to verify data integrity.  this should traverse the timelines
-  to make sure that all reference entries exist.  it should also calculate
-  the SHA-256 value of the content of each entry and make sure that it matches
-  the entry ID
+* make the fsck test pass.  This should be implemented by passing
+  entry-search a command line option telling it to verify each
+  line in the timeline and generate warnings if it finds bad ones.
 
 * clk rpt
 * clk edit
