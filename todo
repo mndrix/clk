@@ -1,6 +1,8 @@
 * clk rpt
 * clk edit
 * clk in /something-rare (clk in by searching for a template)
+* clk pull
+* clk push
 
 
 # at some point we might want to do these too
