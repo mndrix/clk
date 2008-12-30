@@ -1,8 +1,12 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
+use FindBin;  # TODO we can probably do this faster ourselves
 
+# adjust the environment
 $ENV{CLK_ROOT} ||= './play';
+$ENV{PERL5LIB}   = "$FindBin::Bin/lib:" . $ENV{PERL5LIB};
+$ENV{PATH}       = $FindBin::Bin . ':' . $ENV{PATH};
 
 # the user must identify himself
 die "Please set CLK_IDENTITY to indicate who you are.\n"
@@ -10,9 +14,6 @@ die "Please set CLK_IDENTITY to indicate who you are.\n"
   . "\n"
   . "  export CLK_IDENTITY=somebody\@example.com\n"
   if not defined $ENV{CLK_IDENTITY};
-
-# if testing, put the current directory in the path
-$ENV{PATH} = ".:$ENV{PATH}" if substr($0, 0, 1) eq '.';
 
 my $command = shift or die "Please specfy a clk command\n";
 
