@@ -1,0 +1,69 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Time::Local qw( timegm );
+use POSIX qw( strftime );
+
+@ARGV = ('--period', 'today') if not @ARGV;  # default to displaying today
+open my $search, '-|', qw( clk entry-search --output content ), @ARGV
+    or die "Couldn't run entry-search\n";
+
+while ( my $id_line = <$search> ) {
+    chomp $id_line;
+    my ($entry_id) = $id_line =~ m/^id ([0-9a-zA-Z]+)$/;
+    chomp( my $length_line = <$search> );
+    my ($content_length) = $length_line =~ m/^content (\d+)$/;
+
+    # slurp the entry's content
+    my $entry_text = do {
+        local $/ = \$content_length;  # slurp the entry's content
+        <$search>;
+    };
+
+    # convert the entry text into a hash
+    my $entry = parse_entry($entry_text);
+    $entry->{id} = $entry_id;
+
+    # this is the only code that changes for each report
+    my $time = to_localtime($entry->{time});
+    printf "%6s %5s %5s %s\n",
+        abbreviated_entry_id($entry->{id}),
+        nice_date($time),
+        nice_time($time),
+        $entry->{text};
+}
+
+sub abbreviated_entry_id {
+    my ($id) = @_;
+    return substr $id, 0, 6;
+}
+
+sub to_localtime {
+    my ($iso) = @_;
+    my @parts = reverse split /[TZ:-]/, $iso;
+    $parts[4]--;  # month is 0-based
+    $parts[5] -= 1900;  # year is 1900-based
+    return scalar timegm(@parts);
+}
+
+sub nice_date {
+    my ($epoch) = @_;
+    return strftime("%m/%d", localtime($epoch) );
+}
+
+sub nice_time {
+    my ($epoch) = @_;
+    return strftime("%H:%M", localtime($epoch) );
+}
+
+sub parse_entry {
+    my ($entry_text) = @_;
+
+    my %entry;
+    for my $line ( split m{$/}, $entry_text ) {
+        my ($key, $value) = split /: /, $line;
+        $entry{$key} = $value;
+    }
+
+    return \%entry;
+}

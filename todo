@@ -1,4 +1,8 @@
 * clk rpt
+* clk entry-search --tail N (matches only the last N entries)
+* clk entry-search --output content,duration (includes duration info)
+* incorporate duration information into the 'list' output
+
 * clk edit
 * clk in /something-rare (clk in by searching for a template)
 * clk pull
