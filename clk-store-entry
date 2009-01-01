@@ -1,7 +1,6 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use lib 'lib';  # requires 100+ system calls, yuck
 use App::Clk::Util qw( clk_root timeline_root );
 sub lock_file ($&);  # predeclare for some nicer syntax
 

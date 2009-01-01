@@ -1,7 +1,6 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use lib 'lib';  # uses 100+ system calls, yuck
 use IPC::Open2;
 use App::Clk::Util qw( clk_root resolve_instant );
 
