@@ -3,10 +3,13 @@ use strict;
 use warnings;
 use FindBin;  # TODO we can probably do this faster ourselves
 
-# adjust the environment
-$ENV{CLK_ROOT} ||= './play';
-$ENV{PERL5LIB}   = "$FindBin::Bin/lib:" . ( $ENV{PERL5LIB} || '' );
-$ENV{PATH}       = $FindBin::Bin . ':' . ( $ENV{PATH} || '' );
+# adjust the environment, if necessary
+if ( not $ENV{CLK_ENVIRONMENT_ALREADY_ADJUSTED} ) {
+    $ENV{CLK_ROOT} ||= './play';
+    $ENV{PERL5LIB}   = "$FindBin::Bin/lib:" . ( $ENV{PERL5LIB} || '' );
+    $ENV{PATH}       = $FindBin::Bin . ':' . ( $ENV{PATH} || '' );
+    $ENV{CLK_ENVIRONMENT_ALREADY_ADJUSTED} = 1;
+}
 
 # the user must identify himself
 die "Please set CLK_IDENTITY to indicate who you are.\n"
