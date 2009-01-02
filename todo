@@ -3,6 +3,10 @@
 * clk in /something-rare (clk in by searching for a template)
 * clk pull
 * clk push
+* go through an optimization phase to make sure everything is fast
+    * implement clk in C so that it loads really fast
+    * make sure that clk doesn't adjust PATH or PERL5LIB multiple times
+      this could make the PATH really long
 
 
 # at some point we might want to do these too
