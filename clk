@@ -1,13 +1,13 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use FindBin;  # TODO we can probably do this faster ourselves
 
 # adjust the environment, if necessary
+my $bin_dir = '/Users/michael/src/clk';  # TODO fill this in at build time
 if ( not $ENV{CLK_ENVIRONMENT_ALREADY_ADJUSTED} ) {
     $ENV{CLK_ROOT} ||= './play';
-    $ENV{PERL5LIB}   = "$FindBin::Bin/lib:" . ( $ENV{PERL5LIB} || '' );
-    $ENV{PATH}       = $FindBin::Bin . ':' . ( $ENV{PATH} || '' );
+    $ENV{PERL5LIB}   = "$bin_dir/lib:" . ( $ENV{PERL5LIB} || '' );
+    $ENV{PATH}       = $bin_dir . ':' . ( $ENV{PATH} || '' );
     $ENV{CLK_ENVIRONMENT_ALREADY_ADJUSTED} = 1;
 }
 
