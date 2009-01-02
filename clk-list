@@ -7,24 +7,8 @@ use POSIX qw( strftime );
 my $rpt = Report->new(@ARGV);
 while ( my $entry = $rpt->next ) {
     my $time = to_localtime($entry->{time});
-    printf "%6s %5s %5s %s\n",
-        abbreviated_entry_id($entry->{id}),
-        nice_date($time),
-        nice_time($time),
+    printf "%6s %11s %s\n",
+        substr( $entry->{id}, 0, 6 ),
+        strftime("%m/%d %H:%M", localtime($time) ),
         $entry->{text};
-}
-
-sub abbreviated_entry_id {
-    my ($id) = @_;
-    return substr $id, 0, 6;
-}
-
-sub nice_date {
-    my ($epoch) = @_;
-    return strftime("%m/%d", localtime($epoch) );
-}
-
-sub nice_time {
-    my ($epoch) = @_;
-    return strftime("%H:%M", localtime($epoch) );
 }
