@@ -107,68 +107,113 @@ sub search_by_time {
     our $end;
     require App::Clk::Util;
 
-    # open all the timelines
+    # build an iterator representing all the timelines merged together
     my $timeline_root = App::Clk::Util::timeline_root( $ENV{CLK_IDENTITY} );
-    my @timelines;
-    while ( my $timeline_filename = glob("$timeline_root/*") ) {
-        open my $fh, '<', $timeline_filename
-            or die "Couldn't open timeline $timeline_filename: $!\n";
-        push @timelines, $fh;
-    }
+    my $timelines = timelines_new( glob("$timeline_root/*") );
 
-    # these subs make the following code easier to understand
-    my @matches;
-    my $next_match = sub {
-        my $i = shift;
-        my $fh = $timelines[$i] or return;
-        LOOP: {
-            my $line = <$fh>;
-            if ( not defined $line ) {  # finished reading this timeline
-                $timelines[$i] = undef;
-                return;
-            }
-            chomp $line;
-            if ( $fsck and $line !~ m/^[0-9a-f]{8} [0-9a-f]{40}$/o ) {
-                # this line is mangled
-                warn "Timeline entry is invalid: $line\n";
-                redo LOOP;
-            }
-            my ($hex_time, $entry_id) = split / /, $line;
-            my $time = hex $hex_time;
-            redo LOOP if $time < $begin;
-            if ( $time > $end ) {
-                $timelines[$i] = undef;
-                return;
-            }
-            return [ $time, $entry_id ];
-        };
-    };
+    # find matching entries
+    while ( my $entry = timelines_next($timelines) ) {
+        next if $entry->[0] < $begin;  # too early
+        last if $entry->[0] > $end;    # too late
 
-    # find the first match in each timeline
-    $matches[$_] = $next_match->($_) for 0 .. $#timelines;
-
-    # choose the earliest of the matches
-    while ( grep { defined } @matches ) {
-        my $earliest;
-        my $earliest_index;
-        for my $i ( 0 .. $#matches ) {
-            my $match = $matches[$i] or next;
-            if ( !$earliest or $match->[0] < $earliest->[0] ) {
-                $earliest       = $match;
-                $earliest_index = $i;
-            }
-        }
-        last if not $earliest;  # no more matches
-
-        # emit the earliest entry that we found
-        my $entry_id = $earliest->[1];
+        my $entry_id = $entry->[1];
         emit( App::Clk::Util::hashed_path( $entry_id, '%r/entries/%h' ) );
-
-        # find the next match in the timeline that provided the earliest
-        $matches[$earliest_index] = $next_match->($earliest_index);
     }
 
     exit;
+}
+
+sub timelines_new {
+    my @timelines;
+    for my $timeline_filename (@_) {
+        push @timelines, timeline_new($timeline_filename);
+    }
+    return \@timelines;
+}
+
+sub timelines_next {
+    my ($timelines) = @_;
+
+    # choose the earliest entry among all the timelines
+    my $earliest;
+    my $earliest_index;
+    my $i = 0;
+    while ( $i <= $#$timelines ) {
+        my $entry = timeline_peek( $timelines->[$i] );
+        if ( not $entry ) {    # this timeline is empty
+            splice @$timelines, $i, 1;    # don't increment $i
+        }
+        elsif ( !$earliest or $entry->[0] < $earliest->[0] ) {
+            $earliest       = $entry;
+            $earliest_index = $i++;
+        }
+        else {
+            $i++;
+        }
+    }
+    return if not $earliest;  # no more matches
+
+    # consume the earliest entry that we found
+    return timeline_next( $timelines->[$earliest_index] );
+}
+
+sub timeline_new {
+    my ($timeline_filename) = @_;
+    my $size = -s $timeline_filename;
+    open my $fh, '<', $timeline_filename
+      or die "Couldn't open timeline $timeline_filename: $!\n";
+    my $content = do { local $/; <$fh> };
+
+    return {
+        bullpen  => undef,
+        position => 0,
+        length   => $size,
+        content  => $content,
+    };
+}
+
+sub timeline_peek {
+    my ($timeline) = @_;
+    return $timeline->{bullpen} if defined $timeline->{bullpen};
+
+    TRY: {
+        # have we reached the end of the timeline?
+        return if $timeline->{position} >= $timeline->{length};
+
+        # extract and parse the line
+        my $line = substr $timeline->{content}, $timeline->{position}, 49;
+        $timeline->{position} += 50;
+        if ( $fsck and $line !~ m/^[0-9a-f]{8} [0-9a-f]{40}$/o ) {
+            # this line is mangled
+            chomp $line;
+            warn "Timeline entry is invalid: $line\n";
+            redo TRY;
+        }
+        my ($hex_time, $entry_id) = split / /, $line;
+        my $time = hex $hex_time;
+
+        # is this line past the interesting lines?
+        return $timeline->{bullpen} = [ $time, $entry_id ];
+    };
+}
+
+sub timeline_next {
+    my ($timeline) = @_;
+
+    # do we already know what the next entry is?
+    if ( my $next = $timeline->{bullpen} ) {
+        $timeline->{bullpen} = undef;
+        return $next;
+    }
+
+    # can we fetch the next entry?
+    if ( my $next = timeline_peek($timeline) ) {
+        $timeline->{bullpen} = undef;
+        return $next;
+    }
+
+    # this timeline is empty, as far as we're concerned
+    return;
 }
 
 __END__
