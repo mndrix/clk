@@ -10,5 +10,6 @@ while ( my $entry = $rpt->next ) {
     printf "%6s %11s %s\n",
         substr( $entry->{id}, 0, 6 ),
         strftime("%m/%d %H:%M", localtime($time) ),
+        $entry->{duration},
         $entry->{text};
 }

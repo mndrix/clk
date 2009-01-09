@@ -87,7 +87,17 @@ else {  # partial entry ID
 exit 1;  # failure
 
 sub emit {
-    my ($entry_filename) = @_;
+    my ($entry) = @_;
+    my $entry_filename;
+    if ( ref $entry ) {
+        require App::Clk::Util;
+        my $entry_id = $entry->[1];
+        $entry_filename =
+          App::Clk::Util::hashed_path( $entry_id, '%r/entries/%h' );
+    }
+    else {
+        $entry_filename = $entry;
+    }
     ( my $entry_id = substr $entry_filename, -41 ) =~ y#/##d;
     if ( $outputting_content ) {
         print "id $entry_id\n";
@@ -115,9 +125,7 @@ sub search_by_time {
     while ( my $entry = timelines_next($timelines) ) {
         next if $entry->[0] < $begin;  # too early
         last if $entry->[0] > $end;    # too late
-
-        my $entry_id = $entry->[1];
-        emit( App::Clk::Util::hashed_path( $entry_id, '%r/entries/%h' ) );
+        emit($entry);
     }
 
     exit;
