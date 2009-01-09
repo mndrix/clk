@@ -1,3 +1,4 @@
+* add tests for entry-search --output content,duration
 * clk list
 * document the list command
 * clk entry-search --tail N (matches only the last N entries)
