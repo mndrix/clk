@@ -7,9 +7,24 @@ use POSIX qw( strftime );
 my $rpt = Report->new(@ARGV);
 while ( my $entry = $rpt->next ) {
     my $time = to_localtime($entry->{time});
-    printf "%6s %11s %s\n",
+    my $duration = pretty_duration($entry);
+    printf "%6s %11s %4s %s\n",
         substr( $entry->{id}, 0, 6 ),
         strftime("%m/%d %H:%M", localtime($time) ),
-        $entry->{duration},
+        $duration,
         $entry->{text};
+}
+
+sub pretty_duration {
+    my ($entry) = @_;
+
+    # cases in which we don't want, or can't have, the duration
+    return '' if not exists $entry->{duration};
+    return '' if $entry->{text} eq 'out';
+
+    # make it pretty
+    my $duration = $entry->{duration};
+    return sprintf("%dh", int($duration/60/60)) if $duration > 60*60;
+    return sprintf("%dm", int($duration/60   )) if $duration > 60;
+    return sprintf("%ds", int($duration      ));
 }
