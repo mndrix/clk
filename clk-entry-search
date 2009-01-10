@@ -3,6 +3,7 @@ use strict;
 use warnings;
 
 # process command line arguments
+my %acceptable_outputs = map { $_ => 1 } qw( content duration );
 my %outputting;
 our $begin;
 our $end;
@@ -12,7 +13,11 @@ while ( $i <= $#ARGV ) {
     if ( $ARGV[$i] eq '--output' ) {
         die "--output requires an argument\n" if $i + 1 > $#ARGV;
         my $spec = $ARGV[ $i + 1 ];
-        $outputting{$_}++ for split /,/, $spec;
+        for my $output ( split /,/, $spec ) {
+            die "Invalid output kind: $output\n"
+              unless $acceptable_outputs{$output};
+            $outputting{$output} = 1;
+        }
         splice @ARGV, $i, 2;    # remove the processed arguments
         next;
     }
@@ -98,21 +103,24 @@ sub emit {
         $entry_filename = $entry;
     }
     ( my $entry_id = substr $entry_filename, -41 ) =~ y#/##d;
+    print "id $entry_id\n" if $outputting{content} or $outputting{duration};
+    if ( $outputting{duration} ) {
+        die "TODO: Cannot output duration for a single entry\n"
+            if not ref $entry;
+        my $next_entry = $entry->[2]->();
+        my $next_time = $next_entry
+                        ? $next_entry->[0]
+                        : ( $ENV{CLK_TIME} || time )
+                        ;
+        printf "duration %d\n", $next_time - $entry->[0];
+    }
     if ( $outputting{content} ) {
-        print "id $entry_id\n";
-        if ( $outputting{duration} ) {
-            die "TODO: Cannot output duration for a single entry\n"
-              if not ref $entry;
-            my $next_entry = $entry->[2]->();
-            my $next_time = $next_entry ? $next_entry->[0] : time;
-            printf "duration %d\n", $next_time - $entry->[0];
-        }
         open my $fh, '<', $entry_filename
           or die "Couldn't open $entry_filename: $!\n";
         my $content = scalar do { local $/; <$fh> };
         printf "content %d\n%s", length($content), $content;
-        return;
     }
+    return if $outputting{content} or $outputting{duration};
 
     print "$entry_id\n";
     return;
