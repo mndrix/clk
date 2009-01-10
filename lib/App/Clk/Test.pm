@@ -29,7 +29,8 @@ sub clk_setup_test {
 
     # create a fresh, safe root directory
     $ENV{CLK_ROOT} = 't/_clk';
-    mkdir 't/_clk' if not -d 't/_clk';
+    rmtree('t/_clk') if -d 't/_clk';
+    mkdir 't/_clk';
 
     # create a testing identity
     $ENV{CLK_IDENTITY} = 'tester@example.org';
