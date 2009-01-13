@@ -28,3 +28,42 @@ sub pretty_duration {
     return sprintf("%dm", int($duration/60   )) if $duration > 60;
     return sprintf("%ds", int($duration      ));
 }
+
+__END__
+
+=head1 NAME
+
+clk list - List entries
+
+=head1 SYNOPSIS
+
+B<clk list> [options...]
+
+=head1 DESCRIPTION
+
+By default, displays a summary of all of today's entries with each entry on a
+line by itself.  The output looks something like:
+
+    a5fc6d 01/09 16:03  38m first one today
+    b3c155 01/09 16:41  31s second one
+    607991 01/09 16:42  10m third time
+    f9e455 01/09 16:53      out
+
+Using the first row as a template, the columns are:
+
+    a5fc6d - this entry's abbreviated ID
+    01/09  - the entry's date in mm/dd format
+    16:03  - the entry's time in hh:mm format (24-hour)
+    38m    - the duration between this entry and the next one
+
+The remainder of the line is the entry's "text" attribute.
+
+=head1 OPTIONS
+
+All the same options as L<clk-entry-search>.  For instance, to display all the
+entries for this week, run C<clk list --period 'this week'>.
+
+=head1 EXIT CODES
+
+ 0   - the command executed successfully
+ 255 - an unknown error occurred.  Check the command output for details

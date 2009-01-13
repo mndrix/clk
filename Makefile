@@ -1,5 +1,6 @@
 HTML_DOCS = docs/clk-in.html docs/clk-out.html docs/clk-entry-search.html \
-			docs/clk-cat-entry.html
+			docs/clk-cat-entry.html \
+			docs/clk-list.html
 POD_DOCS = docs/specs.html docs/environment.html
 POD2HTML_TMPS = *.tmp
 
