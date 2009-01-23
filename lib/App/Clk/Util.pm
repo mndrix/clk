@@ -285,10 +285,154 @@ sub hashed_path {
     return $template;
 }
 
+=head2 iterator($code)
+
+Given a code reference, returns an iterator object whose values are obtained
+by calling C<$code> repeatedly.
+
+=cut
+
+sub iterator {
+    my ($code) = @_;
+    return App::Clk::Util::Iterator->new($code);
+}
+
+=head2 iterator_merge($choose, @iterators)
+
+Returns an iterator representing the merge of all C<@iterators>.
+
+C<@iterators> is a list of iterators.  C<$choose> is a code reference for
+choosing one value among several possibilities.  Each time that a value is
+needed from the merged iterator, C<$choose> is called with an arrayref of
+possible values.  It should return the index of the chosen value.
+
+=cut
+
+sub iterator_merge {
+    my ($choose, @iterators) = @_;
+
+    return iterator( sub {
+        my @values;
+        my $i = 0;
+        while ( $i <= $#iterators ) {
+            my $value = $iterators[$i]->peek;
+            if ( defined $value ) {
+                push @values, $value;
+                $i++;
+            }
+            else {  # this iterator is empty, remove it
+                splice @iterators, $i, 1;
+            }
+        }
+        return if not @values;
+
+        my $chosen = $choose->(\@values);
+        $iterators[$chosen]->next;
+        return $values[$chosen];
+    });
+}
+
+=head2 iterator_sorted_merge($comparator, @iterators)
+
+Similar to L</iterator_merge>, but the choice closure simply compares two
+values.  Among several choices, the lesser value is always chosen.
+
+If all C<@iterators> produce values in order sorted according to
+C<$comparator>, L</iterator_sorted_merge> results in an iterator whose values
+are also sorted that same way.
+
+=cut
+
+sub iterator_sorted_merge {
+    my ($comparator, @iterators) = @_;
+
+    return iterator_merge(
+        sub {
+            my $choices = shift;
+            my $min_i   = 0;
+            my $min     = $choices->[0];
+            return if not defined $min;
+            for my $i ( 1 .. $#$choices ) {
+                if ( $comparator->( $min, $choices->[$i] ) > 0 ) {
+                    $min_i = $i;
+                    $min   = $choices->[$i];
+                }
+            }
+
+            return $min_i;
+        },
+        @iterators
+    );
+}
+
+package App::Clk::Util::Iterator;
+
+=head1 Iterator Interface
+
+=head2 new
+
+Don't use this method.  See L</iterator>, L</iterator_merge> and
+L</iterator_sorted_merge> for details about creating iterator objects.
+
+=cut
+
+sub new {
+    my ($class, $code) = @_;
+    return bless [ undef, $code ], $class;
+}
+
+=head2 peek
+
+Returns the value that L</next> will return the next time it's called.
+
+=cut
+
+sub peek {
+    my ($self) = @_;
+    return $self->[0] if defined $self->[0];
+    return $self->[0] = $self->[1]->();
+}
+
+=head2 next
+
+Returns the next value from this iterator.
+
+=cut
+
+sub next {
+    my ($self) = @_;
+    my $value = $self->peek;
+    $self->[0] = undef;
+    return $value;
+}
+
+=head2 take($n)
+
+Returns a list of C<$n> values from the iterator.  It's assumed that the
+iterator can produce at least C<$n> values.  This can be handy with infinite
+iterators.
+
+=cut
+
+sub take {
+    my ($self, $count) = @_;
+    my @values;
+    push @values, $self->next for 1 .. $count;
+    return @values;
+}
+
+=head2 all
+
+Returns a list of all the values from the iterator.  Naturally, this method
+should not be called on infinite iterators.
+
+=cut
+
+sub all {
+    my ($self) = @_;
+    my @values;
+    push @values, $self->next while defined $self->peek;
+    return @values;
+}
+
 1;
-
-=head1 EXPORTABLE SUBROUTINES
-
-=head2 get_root
-
-Returns the path to the root clk directory.
