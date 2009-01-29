@@ -107,7 +107,7 @@ sub emit {
     if ( $outputting{duration} ) {
         die "TODO: Cannot output duration for a single entry\n"
             if not ref $entry;
-        my $next_entry = $entry->[2]->();
+        my $next_entry = $entry->[2]->peek;
         my $next_time = $next_entry
                         ? $next_entry->[0]
                         : ( $ENV{CLK_TIME} || time )
@@ -129,123 +129,20 @@ sub emit {
 sub search_by_time {
     our $begin;
     our $end;
-    require App::Clk::Util;
 
-    # build an iterator representing all the timelines merged together
-    my $timeline_root = App::Clk::Util::timeline_root( $ENV{CLK_IDENTITY} );
-    my $timelines = timelines_new( glob("$timeline_root/*") );
+    # build an iterator representing a unified timeline for the user
+    require App::Clk::Util;
+    my $timeline = App::Clk::Util::iterator_timeline( $ENV{CLK_IDENTITY} );
 
     # find matching entries
-    while ( my $entry = timelines_next($timelines) ) {
+    while ( my $entry = $timeline->next ) {
         next if $entry->[0] < $begin;  # too early
         last if $entry->[0] > $end;    # too late
+        $entry->[2] = $timeline;
         emit($entry);
     }
 
     exit;
-}
-
-sub timelines_new {
-    my @timelines;
-    for my $timeline_filename (@_) {
-        push @timelines, timeline_new($timeline_filename);
-    }
-    return \@timelines;
-}
-
-sub timelines_next {
-    my ($timelines, $peek) = @_;
-
-    # choose the earliest entry among all the timelines
-    my $earliest;
-    my $earliest_index;
-    my $i = 0;
-    while ( $i <= $#$timelines ) {
-        my $entry = timeline_peek( $timelines->[$i] );
-        if ( not $entry ) {    # this timeline is empty
-            splice @$timelines, $i, 1;    # don't increment $i
-        }
-        elsif ( !$earliest or $entry->[0] < $earliest->[0] ) {
-            $earliest       = $entry;
-            $earliest_index = $i++;
-        }
-        else {
-            $i++;
-        }
-    }
-    return if not $earliest;  # no more matches
-
-    # are we only peeking?
-    return timeline_peek( $timelines->[$earliest_index] ) if $peek;
-
-    # ... nope, so consume the earliest entry that we found
-    my $entry = timeline_next( $timelines->[$earliest_index] );
-    $entry->[2] = sub { timelines_peek($timelines) };
-    return $entry;
-}
-
-sub timelines_peek {
-    my ($timelines) = @_;
-    return timelines_next( $timelines, 'peek' );
-}
-
-sub timeline_new {
-    my ($timeline_filename) = @_;
-    my $size = -s $timeline_filename;
-    open my $fh, '<', $timeline_filename
-      or die "Couldn't open timeline $timeline_filename: $!\n";
-    my $content = do { local $/; <$fh> };
-
-    return {
-        bullpen  => undef,
-        position => 0,
-        length   => $size,
-        content  => $content,
-    };
-}
-
-sub timeline_peek {
-    my ($timeline) = @_;
-    return $timeline->{bullpen} if defined $timeline->{bullpen};
-
-    TRY: {
-        # have we reached the end of the timeline?
-        return if $timeline->{position} >= $timeline->{length};
-
-        # extract and parse the line
-        my $line = substr $timeline->{content}, $timeline->{position}, 49;
-        $timeline->{position} += 50;
-        if ( $fsck and $line !~ m/^[0-9a-f]{8} [0-9a-f]{40}$/o ) {
-            # this line is mangled
-            chomp $line;
-            warn "Timeline entry is invalid: $line\n";
-            redo TRY;
-        }
-        my ($hex_time, $entry_id) = split / /, $line;
-        my $time = hex $hex_time;
-
-        # is this line past the interesting lines?
-        return $timeline->{bullpen} = [ $time, $entry_id ];
-    };
-}
-
-sub timeline_next {
-    my ($timeline) = @_;
-
-    # do we already know what the next entry is?
-    if ( my $next = $timeline->{bullpen} ) {
-        $timeline->{bullpen} = undef;
-        return $next;
-    }
-
-    # can we fetch the next entry?
-    if ( my $next = timeline_peek($timeline) ) {
-        $timeline->{bullpen} = undef;
-        return $next;
-    }
-
-    # this timeline is empty, as far as we're concerned
-    return;
 }
 
 __END__

@@ -1,6 +1,4 @@
 * clk entry-search --tail N (matches only the last N entries)
-    * factor out a generic iterator interface
-    * rewrite entry-search to use that interface
     * implement 'tail' by creating backwards running iterators of all
       the timeline files.  Make a merging iterator to merge those
       three iterators together.  Choose the first three entries from

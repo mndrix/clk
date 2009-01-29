@@ -285,6 +285,8 @@ sub hashed_path {
     return $template;
 }
 
+=head1 Iterator Subroutines
+
 =head2 iterator($code)
 
 Given a code reference, returns an iterator object whose values are obtained
@@ -364,6 +366,39 @@ sub iterator_sorted_merge {
         @iterators
     );
 }
+
+=head2 iterator_timeline($identity)
+
+Returns an iterator which iterates the entries in the timeline for the
+identity named C<$identity>.
+
+=cut
+
+sub iterator_timeline {
+    my ($identity) = @_;
+    my $timeline_root = timeline_root($identity);
+    my @iterators;
+    for my $path ( glob "$timeline_root/*" ) {
+        open my $fh, '<', $path or die "Could not open $path: $!";
+        push @iterators, iterator( sub {
+            my $line = <$fh>;
+            return if not defined $line;
+            chomp $line;
+            if ( $line =~ m/^([0-9a-f]{8}) ([0-9a-f]{40})$/o ) {
+                my ( $hex_time, $entity_id ) = ( $1, $2 );
+                my $time = hex $hex_time;
+                return [ $time, $entity_id ];
+            }
+            die "Timeline entry is invalid: $line\n";
+        });
+    }
+
+    return iterator_sorted_merge( sub {
+        my ( $first, $second ) = @_;
+        return $first->[0] <=> $second->[0];
+    }, @iterators );
+}
+
 
 package App::Clk::Util::Iterator;
 
