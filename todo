@@ -5,6 +5,7 @@
       the merge iterator.
 
 * clk edit
+* clk rm
 * clk in /something-rare (clk in by searching for a template)
 * clk pull
 * clk push
