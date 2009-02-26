@@ -10,6 +10,7 @@
 * clk pull
 * clk push
 * go through an optimization phase to make sure everything is fast
+    * run and optimize clk on askos. it makes everything seem slow :-)
     * implement clk in C so that it loads really fast
     * make sure that clk doesn't adjust PATH or PERL5LIB multiple times
       this could make the PATH really long
