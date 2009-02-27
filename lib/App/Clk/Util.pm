@@ -324,6 +324,28 @@ sub entry_search {
     });
 }
 
+=head2 append_deletions_log($kind, $entry_id)
+
+Appends a single entry to the deletions log.  C<$kind> is 'd' to indicate
+deletion and 'u' to indicate undeletion.  C<$entry_id> specifies which entry
+has been un/deleted.
+
+=cut
+
+sub append_deletions_log {
+    my ($kind, $entry_id) = @_;
+    die "'$kind' is not a valid deletion log entry kind\n"
+      if $kind ne 'd' and $kind ne 'u';
+
+    my $root = clk_root();
+    my $log = "$root/deletions.log";
+    open my $fh, '>>', $log
+      or die "Unable to append the deletions log $log\n";
+    print $fh "$kind $entry_id\n";
+
+    return;
+}
+
 =head2 hashed_path( $sha1, $template )
 
     my $path = hashed_path( $sha1, '%r/entries/%h' );
@@ -376,6 +398,36 @@ sub parse_timeline_line {
         return ( hex($1), $2 );
     }
     die "Timeline entry is invalid: $line\n";
+}
+
+=head2 is_deleted_entry($entry_id)
+
+Returns a true value if C<$entry_id> is marked as being deleted.  Otherwise,
+it returns a false value.
+
+=cut
+
+sub is_deleted_entry {
+    my ($entry_id) = @_;
+    our $deleted_entries;
+    if ( not $deleted_entries ) {
+        my $log = clk_root() . '/deletions.log';
+        if ( -e $log ) {
+            open my $fh, '<', $log
+              or die "Unable to open deletions log $log: $!\n";
+            while ( my $line = <$fh> ) {
+                chomp $line;
+                my ($kind, $entry_id) = split / /, $line;
+                $deleted_entries->{$entry_id} = $kind eq 'd' ? 1 : 0;
+            }
+        }
+        else {
+            $deleted_entries = {};
+            return;
+        }
+    }
+
+    return $deleted_entries->{$entry_id};
 }
 
 =head1 Iterator Subroutines
