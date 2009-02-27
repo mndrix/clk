@@ -113,14 +113,20 @@ sub emit {
     ( my $entry_id = substr $entry_filename, -41 ) =~ y#/##d;
     print "id $entry_id\n" if $outputting{content} or $outputting{duration};
     if ( $outputting{duration} ) {
-        die "TODO: Cannot output duration for a single entry\n"
-            if not ref $entry;
-        my $next_entry = exists $entry->[3] ? $entry->[3] : $entry->[2]->peek;
-        my $next_time = $next_entry
-                        ? $next_entry->[0]
-                        : ( $ENV{CLK_TIME} || time )
-                        ;
-        printf "duration %d\n", $next_time - $entry->[0];
+        if ( not ref $entry ) {
+            printf "duration %d\n",
+              single_entry_duration( $entry, $entry_filename );
+        }
+        else {
+            my $next_entry =
+              exists $entry->[3] ? $entry->[3] : $entry->[2]->peek;
+            require App::Clk::Util;
+            my $next_time = $next_entry
+                            ? $next_entry->[0]
+                            : App::Clk::Util::now()
+                            ;
+            printf "duration %d\n", $next_time - $entry->[0];
+        }
     }
     if ( $outputting{content} ) {
         open my $fh, '<', $entry_filename
@@ -132,6 +138,34 @@ sub emit {
 
     print "$entry_id\n";
     return;
+}
+
+sub single_entry_duration {
+    my ( $entry_id, $entry_filename ) = @_;
+    require App::Clk::Util;
+
+    # find the entry time
+    open my $fh, '<', $entry_filename
+        or die "Couldn't open $entry_filename: $!\n";
+    my ($time) = map { /^time: (.*)$/ ? $1 : () } <$fh>;
+    $time = App::Clk::Util::to_localtime($time);
+    close $fh;
+    die "Unable to find the time for $entry_id\n" if not $time;
+
+    # find the first entry after that time
+    my $entries = App::Clk::Util::entry_search({
+        between => [ $time, App::Clk::Util::now() ],
+    });
+    my $following_time;
+    while ( my $entry = $entries->next ) {
+        next if $entry_id eq $entry->id;
+        $following_time = $entry->time;
+        last;
+    }
+    $following_time ||= App::Clk::Util::now();
+
+    # subtract the two
+    return $following_time - $time;
 }
 
 sub search_by_tail {

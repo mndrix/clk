@@ -73,7 +73,15 @@ sub resolve_instant {
     return $string         if $string =~ m/^\d+$/;     # epoch seconds
     return $time - 60 * $1 if $string =~ m/^(\d+)m/;
 
-    die "Unknown instant description: $string\n";
+    # can we resolve the instant as an entry?
+    my $entries = entry_search([$string]);
+    my $entry = $entries->next;
+    die "Unknown instant description: $string\n" if not $entry;
+    die   "Resolving instant as entry pattern '$string': "
+        . "more than one matching entry\n"
+        if $entries->next;
+
+    return $entry->time;
 }
 
 =head2 resolve_period
