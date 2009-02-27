@@ -65,11 +65,7 @@ sub to_localtime {
 
 # given a string representation of an instant in time, it returns
 # that instant as the number of seconds since the epoch.  Supported
-# instant formats are:
-#
-#   * a number of seconds since the epoch
-#   * a number followed by the letter "m" indicates a number of
-#     minutes in the past
+# instant formats documented in docs/specs.pod
 sub resolve_instant {
     my ($string) = @_;
     my $time = now();
