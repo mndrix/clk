@@ -6,11 +6,15 @@
 
 # nice to have
 * clk in /something-rare (clk in by searching for a template)
+* clk gc (remove deletions, compress entries, etc)
 * go through an optimization phase to make sure everything is fast
     * run and optimize clk on askos. it makes everything seem slow :-)
     * implement clk in C so that it loads really fast
 * implement more instant spec units (we only support m=minutes now)
 * reduce the number of module dependencies
+* it would be easy enough to make "clk rm --undo" which would undo the
+  most recent deletion.  it would just search deletions.log for the most
+  recent delete command.  Then it'd undelete that entry.
 
 # pie in the sky
 * implement a general language for specifying time periods.  A time period
