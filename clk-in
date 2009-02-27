@@ -7,6 +7,7 @@ use App::Clk::Util qw( clk_root now resolve_instant );
 # process command line arguments
 my $storing_entry = 1;
 our $time = now();
+our $exact = 0;
 my $i = 0;
 while ( $i <= $#ARGV ) {
     if ( $ARGV[$i] eq '--at' ) {
@@ -19,6 +20,11 @@ while ( $i <= $#ARGV ) {
             die "Invalid instant for --at: $instant ($@)\n";
         }
         splice @ARGV, $i, 2;    # remove the processed arguments
+        next;
+    }
+    elsif ( $ARGV[$i] eq '--exact' ) {
+        $exact = 1;
+        splice @ARGV, $i, 1;    # remove the processed arguments
         next;
     }
     if ( $ARGV[$i] eq '--output-only' ) {
@@ -58,7 +64,14 @@ elsif ( looks_like_partial_entry_id( $ARGV[0] ) ) {
     }
     close $search;
     if ($content) {
-        $entry_text = join "\n", grep { !/^time: / } split(/\n/, $content, -1);
+        if ( $exact ) {
+            $entry_text = $content;
+        }
+        else {
+            $entry_text = join "\n",
+                grep { !/^time: / }
+                split(/\n/, $content, -1);
+        }
     }
 }
 if ( not defined $entry_text ) {
@@ -75,10 +88,12 @@ else {                   # send output to STDOUT
 }
 
 # print the full entry content
-my @parts = (gmtime $time)[ 0 .. 5];
-$parts[4]++;  # use human-readable day
-$parts[5] += 1900; # ... and year
-printf {$writer} "time: %04d-%02d-%02dT%02d:%02d:%02dZ\n", reverse @parts;
+if ( !defined($entry_text) or $entry_text !~ m/^time:/xms ) {
+    my @parts = (gmtime $time)[ 0 .. 5 ];
+    $parts[4]++;  # use human-readable day
+    $parts[5] += 1900; # ... and year
+    printf {$writer} "time: %04d-%02d-%02dT%02d:%02d:%02dZ\n", reverse @parts;
+}
 printf {$writer} "identity: %s\n", $ENV{CLK_IDENTITY}
     unless defined($entry_text) and $entry_text =~ m/^identity:/xms;
 print {$writer} $entry_text if defined $entry_text;
@@ -135,6 +150,14 @@ instant formats.
 
 C<--at> takes precedence over any time specified with the C<CLK_TIME>
 environment variable.
+
+=head2 --exact
+
+This option really only makes sense when one is clocking in with a template
+from an earlier entry.  In such cases, the standard behavior is to use the
+template entry, but replace its time with the current time.  If C<--exact> is
+given, the time is also left as it stood.  This can be useful for undoing a
+preceeding C<clk rm> command.
 
 =head2 --output-only
 
