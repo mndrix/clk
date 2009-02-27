@@ -53,7 +53,7 @@ if ( my $hook = get_hook('pre-in') ) {
 }
 elsif ( looks_like_partial_entry_id( $ARGV[0] ) ) {
     open my $search,
-        "./clk entry-search --output content $ARGV[0] 2>/dev/null |";
+        "./clk entry-search --include-deletions --output content $ARGV[0] 2>/dev/null |";
     my $content;
     while ( my $line = <$search> ) {
         next unless $line =~ m/^content (\d+)$/;

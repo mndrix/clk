@@ -9,6 +9,7 @@ our $begin;
 our $end;
 our $fsck;
 our $tail;
+our $skip_deletions = 1;
 my $i = 0;
 while ( $i <= $#ARGV ) {
     if ( $ARGV[$i] eq '--output' ) {
@@ -37,6 +38,11 @@ while ( $i <= $#ARGV ) {
     }
     elsif ( $ARGV[$i] eq '--fsck' ) {
         $fsck = 1;
+        splice @ARGV, $i, 1;    # remove the processed arguments
+        next;
+    }
+    elsif ( $ARGV[$i] eq '--include-deletions' ) {
+        $skip_deletions = 0;
         splice @ARGV, $i, 1;    # remove the processed arguments
         next;
     }
@@ -100,9 +106,9 @@ exit 1;  # failure
 
 sub emit {
     my ($entry) = @_;
+    require App::Clk::Util;
     my $entry_filename;
     if ( ref $entry ) {
-        require App::Clk::Util;
         my $entry_id = $entry->[1];
         $entry_filename =
           App::Clk::Util::hashed_path( $entry_id, '%r/entries/%h' );
@@ -111,6 +117,8 @@ sub emit {
         $entry_filename = $entry;
     }
     ( my $entry_id = substr $entry_filename, -41 ) =~ y#/##d;
+    return if  $skip_deletions
+           and App::Clk::Util::is_deleted_entry($entry_id);
     print "id $entry_id\n" if $outputting{content} or $outputting{duration};
     if ( $outputting{duration} ) {
         if ( not ref $entry ) {
@@ -275,6 +283,11 @@ Similar in format to L</content>, specifying 'duration' includes a line like
 immediately after the 'id' line.  It specifies the time, in seconds, between
 this entry and the next one.  If there is no next entry, it indicates the time
 that has passed since this entry was created.
+
+=head2 --include-deletions
+
+Search results usually exclude entries which have been marked as deleted.
+With this option, those entries are shown as though they were normal entries.
 
 =head2 --period period
 

@@ -1,0 +1,45 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use App::Clk::Util qw( clk_root append_deletions_log );
+
+# determine which entry we're removing
+my $arg = shift @ARGV;
+my $entry_id;
+if ( not defined $arg ) {
+    chomp( $entry_id = qx{ clk entry-search --tail 1 } );
+}
+else {
+    my @ids = qx{ clk entry-search $arg };
+    die "No entry matches the pattern '$arg'\n"               if @ids < 1;
+    die "Multiple entries matched the pattern '$arg': @ids\n" if @ids > 1;
+    chomp( $entry_id = shift @ids );
+}
+
+# append the deletions log with this ID
+append_deletions_log( 'd', $entry_id );
+
+__END__
+
+=head1 NAME
+
+clk-rm - Remove entries created by clk-in
+
+=head1 SYNOPSIS
+
+B<clk rm> [id_pattern]
+
+=head1 DESCRIPTION
+
+Removes an entry which has been created by L<clk-in>.  C<id_pattern> is
+either the 40 hexadecimal digit identifier for an entry or a unique prefix
+thereof.  If a prefix is given, it must be at least 3 characters long.  If no
+C<id_pattern> is provided, the most recently created entry is deleted.
+
+=head1 OPTIONS
+
+=head1 EXIT CODES
+
+ 0   - An entry was successfully deleted
+ 255 - Improper invocation or another error was encountered.
+       Details are provided on stderr.
