@@ -14,6 +14,7 @@
     * implement clk in C so that it loads really fast
     * make sure that clk doesn't adjust PATH or PERL5LIB multiple times
       this could make the PATH really long
+* implement more instant spec units (we only support m=minutes now)
 
 
 # at some point we might want to do these too
