@@ -1,7 +1,13 @@
 use strict;
 use warnings;
-use Test::More tests => 15;
-use App::Clk::Util qw( iterator iterator_merge iterator_sorted_merge );
+use Test::More tests => 17;
+use App::Clk::Util qw(
+    iterator
+    iterator_file_lines
+    iterator_merge
+    iterator_sorted_merge
+);
+use File::Temp qw( tempfile );
 
 # a simple iterator
 {
@@ -55,4 +61,15 @@ use App::Clk::Util qw( iterator iterator_merge iterator_sorted_merge );
 
     my $it = iterator_sorted_merge( sub { $_[0] cmp $_[1] }, $c, $v, $o );
     is_deeply [ $it->all ], [ 'a' .. 'z' ], 'alphabet';
+}
+
+# iterating the lines of a file forwards
+{
+    my ($fh, $filename) = tempfile();
+    print $fh "$_\n" for 1 .. 10;
+    close $fh;
+    my $forwards = iterator_file_lines( $filename, 'forwards' );
+    is_deeply [ $forwards->all ], [ 1 .. 10 ], 'forwards';
+    my $backwards = iterator_file_lines( $filename, 'backwards' );
+    is_deeply [ $backwards->all ], [ reverse( 1 .. 10 ) ], 'backwards';
 }

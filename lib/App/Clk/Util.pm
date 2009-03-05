@@ -285,6 +285,22 @@ sub hashed_path {
     return $template;
 }
 
+=head2 parse_timeline_line($line)
+
+Given a single line from a timeline file, returns a list.  The first
+member is the epoch time for that line.  The second member is the entry ID.
+If C<$line> cannot be parsed, an exception is thrown.
+
+=cut
+
+sub parse_timeline_line {
+    my ($line) = @_;
+    if ( $line =~ m/^([0-9a-f]{8}) ([0-9a-f]{40})$/o ) {
+        return ( hex($1), $2 );
+    }
+    die "Timeline entry is invalid: $line\n";
+}
+
 =head1 Iterator Subroutines
 
 =head2 iterator($code)
@@ -297,6 +313,33 @@ by calling C<$code> repeatedly.
 sub iterator {
     my ($code) = @_;
     return App::Clk::Util::Iterator->new($code);
+}
+
+=head2 iterator_file_lines( $path, $direction )
+
+Given a filesystem C<$path> and a C<$direction> (either 'forwards' or
+'backwards'), returns an iterator which produces a single, chomped line
+from the file at a time.
+
+=cut
+
+sub iterator_file_lines {
+    my $path = shift;
+    die "You must specify a path" if not defined $path;
+    my $direction = shift || '';
+    $direction = $direction eq 'forwards'  ? +1
+               : $direction eq 'backwards' ? -1
+               : die "Invalid direction '$direction'"
+               ;
+
+    open my $fh, '<', $path or die "Could not open $path: $!";
+    my @lines = $direction > 0 ? <$fh> : reverse <$fh>;
+    my $i = 0;  # start at the first line
+    return iterator( sub {
+        return if $i > $#lines;
+        chomp( my $line = $lines[$i++] );
+        return $line;
+    });
 }
 
 =head2 iterator_merge($choose, @iterators)
@@ -367,38 +410,37 @@ sub iterator_sorted_merge {
     );
 }
 
-=head2 iterator_timeline($identity)
+=head2 iterator_timeline($identity, $direction)
 
 Returns an iterator which iterates the entries in the timeline for the
-identity named C<$identity>.
+identity named C<$identity>.  C<$direction> either 'forwards' or 'backwards'
+(defaulting to 'forwards' if not given).  It specifies whether timeline
+entries are returned in chronologically increasing or decreasing order,
+respectively.
 
 =cut
 
 sub iterator_timeline {
-    my ($identity) = @_;
+    my ($identity, $direction) = @_;
+    $direction ||= 'forwards';
     my $timeline_root = timeline_root($identity);
     my @iterators;
     for my $path ( glob "$timeline_root/*" ) {
-        open my $fh, '<', $path or die "Could not open $path: $!";
+        my $lines = iterator_file_lines( $path, $direction );
         push @iterators, iterator( sub {
-            my $line = <$fh>;
+            my $line = $lines->next;
             return if not defined $line;
-            chomp $line;
-            if ( $line =~ m/^([0-9a-f]{8}) ([0-9a-f]{40})$/o ) {
-                my ( $hex_time, $entity_id ) = ( $1, $2 );
-                my $time = hex $hex_time;
-                return [ $time, $entity_id ];
-            }
-            die "Timeline entry is invalid: $line\n";
+            return [ parse_timeline_line($line) ];
         });
     }
 
-    return iterator_sorted_merge( sub {
-        my ( $first, $second ) = @_;
-        return $first->[0] <=> $second->[0];
-    }, @iterators );
+    my $comparator
+        = $direction eq 'forwards'  ? sub { $_[0][0] <=> $_[1][0] }
+        : $direction eq 'backwards' ? sub { $_[1][0] <=> $_[0][0] }
+        : die "Invalid timeline direction\n"
+        ;
+    return iterator_sorted_merge( $comparator, @iterators );
 }
-
 
 package App::Clk::Util::Iterator;
 
