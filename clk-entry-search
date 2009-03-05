@@ -8,6 +8,7 @@ my %outputting;
 our $begin;
 our $end;
 our $fsck;
+our $tail;
 my $i = 0;
 while ( $i <= $#ARGV ) {
     if ( $ARGV[$i] eq '--output' ) {
@@ -49,11 +50,18 @@ while ( $i <= $#ARGV ) {
         splice @ARGV, $i, 2;    # remove the processed arguments
         next;
     }
+    elsif ( $ARGV[$i] eq '--tail' ) {
+        die "--tail requires an argument\n" if $i + 1 > $#ARGV;
+        $tail = $ARGV[ $i + 1 ];
+        splice @ARGV, $i, 2;    # remove the processed arguments
+        next;
+    }
 
     # found no known options.  move on to the next argument
     $i++;
 }
 
+search_by_tail() if $tail;
 search_by_time() if $begin or $end;
 
 # default to searching by entry ID
@@ -124,6 +132,25 @@ sub emit {
 
     print "$entry_id\n";
     return;
+}
+
+sub search_by_tail {
+
+    # build an iterator representing a unified, backwards timeline
+    require App::Clk::Util;
+    my $timeline =
+      App::Clk::Util::iterator_timeline( $ENV{CLK_IDENTITY}, 'backwards' );
+
+    # find matching entries
+    my @found;
+    while ( my $entry = $timeline->next ) {
+        $entry->[2] = $timeline;
+        unshift @found, $entry;
+        last if @found == $tail;
+    }
+
+    emit($_) for @found;
+    exit;
 }
 
 sub search_by_time {
@@ -203,6 +230,10 @@ bytes worth of content follow the newline on the C<content> line.
 
 Search for entries with times within the specified period.  The
 argument should be a C<period>.  See L<specs> for a list of accepted periods.
+
+=head2 --tail number
+
+Searches for the most recent C<number> entries.
 
 =head1 EXIT CODES
 

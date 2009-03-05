@@ -285,6 +285,22 @@ sub hashed_path {
     return $template;
 }
 
+=head2 parse_timeline_line($line)
+
+Given a single line from a timeline file, returns a list.  The first
+member is the epoch time for that line.  The second member is the entry ID.
+If C<$line> cannot be parsed, an exception is thrown.
+
+=cut
+
+sub parse_timeline_line {
+    my ($line) = @_;
+    if ( $line =~ m/^([0-9a-f]{8}) ([0-9a-f]{40})$/o ) {
+        return ( hex($1), $2 );
+    }
+    die "Timeline entry is invalid: $line\n";
+}
+
 =head1 Iterator Subroutines
 
 =head2 iterator($code)
@@ -394,36 +410,36 @@ sub iterator_sorted_merge {
     );
 }
 
-=head2 iterator_timeline($identity)
+=head2 iterator_timeline($identity, $direction)
 
 Returns an iterator which iterates the entries in the timeline for the
-identity named C<$identity>.
+identity named C<$identity>.  C<$direction> either 'forwards' or 'backwards'
+(defaulting to 'forwards' if not given).  It specifies whether timeline
+entries are returned in chronologically increasing or decreasing order,
+respectively.
 
 =cut
 
 sub iterator_timeline {
-    my ($identity) = @_;
+    my ($identity, $direction) = @_;
+    $direction ||= 'forwards';
     my $timeline_root = timeline_root($identity);
     my @iterators;
     for my $path ( glob "$timeline_root/*" ) {
-        open my $fh, '<', $path or die "Could not open $path: $!";
+        my $lines = iterator_file_lines( $path, $direction );
         push @iterators, iterator( sub {
-            my $line = <$fh>;
+            my $line = $lines->next;
             return if not defined $line;
-            chomp $line;
-            if ( $line =~ m/^([0-9a-f]{8}) ([0-9a-f]{40})$/o ) {
-                my ( $hex_time, $entity_id ) = ( $1, $2 );
-                my $time = hex $hex_time;
-                return [ $time, $entity_id ];
-            }
-            die "Timeline entry is invalid: $line\n";
+            return [ parse_timeline_line($line) ];
         });
     }
 
-    return iterator_sorted_merge( sub {
-        my ( $first, $second ) = @_;
-        return $first->[0] <=> $second->[0];
-    }, @iterators );
+    my $comparator
+        = $direction eq 'forwards'  ? sub { $_[0][0] <=> $_[1][0] }
+        : $direction eq 'backwards' ? sub { $_[1][0] <=> $_[0][0] }
+        : die "Invalid timeline direction\n"
+        ;
+    return iterator_sorted_merge( $comparator, @iterators );
 }
 
 package App::Clk::Util::Iterator;
