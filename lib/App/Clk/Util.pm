@@ -299,6 +299,33 @@ sub iterator {
     return App::Clk::Util::Iterator->new($code);
 }
 
+=head2 iterator_file_lines( $path, $direction )
+
+Given a filesystem C<$path> and a C<$direction> (either 'forwards' or
+'backwards'), returns an iterator which produces a single, chomped line
+from the file at a time.
+
+=cut
+
+sub iterator_file_lines {
+    my $path = shift;
+    die "You must specify a path" if not defined $path;
+    my $direction = shift || '';
+    $direction = $direction eq 'forwards'  ? +1
+               : $direction eq 'backwards' ? -1
+               : die "Invalid direction '$direction'"
+               ;
+
+    open my $fh, '<', $path or die "Could not open $path: $!";
+    my @lines = $direction > 0 ? <$fh> : reverse <$fh>;
+    my $i = 0;  # start at the first line
+    return iterator( sub {
+        return if $i > $#lines;
+        chomp( my $line = $lines[$i++] );
+        return $line;
+    });
+}
+
 =head2 iterator_merge($choose, @iterators)
 
 Returns an iterator representing the merge of all C<@iterators>.
@@ -398,7 +425,6 @@ sub iterator_timeline {
         return $first->[0] <=> $second->[0];
     }, @iterators );
 }
-
 
 package App::Clk::Util::Iterator;
 
