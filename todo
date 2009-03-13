@@ -1,9 +1,3 @@
-* clk entry-search --tail N (matches only the last N entries)
-    * implement 'tail' by creating backwards running iterators of all
-      the timeline files.  Make a merging iterator to merge those
-      three iterators together.  Choose the first three entries from
-      the merge iterator.
-
 * clk edit
 * clk rm
 * clk in /something-rare (clk in by searching for a template)
