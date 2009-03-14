@@ -272,6 +272,49 @@ sub enclosing_year {
     );
 }
 
+=head2 entry_search($positional, $named)
+
+Given an arrayref of C<$positional> arguments and a hashref of C<$named>
+arguments (both optional), returns an iterator (see L</Iterator Interface>)
+which produces entry objects (see L</Entry Interface>).
+
+=cut
+
+sub entry_search {
+    my ($positional) = grep { ref $_ eq 'ARRAY' } @_;
+    my ($named)      = grep { ref $_ eq 'HASH'  } @_;
+
+    # build a command-line for clk-entry-search
+    my @arguments;
+    $named ||= {};
+    while ( my ($key, $value) = each %$named ) {
+        push @arguments, "--$key", $value;
+    }
+    push @arguments, @{ $positional || [] };
+    unshift @arguments, '--output content,duration';  # optimize later
+
+    # let clk-entry-search do the hard work
+    my $command = join ' ', './clk', 'entry-search', @arguments;
+    open my $fh, '-|', $command
+        or die "Unable to run clk entry-search";
+    return iterator( sub {
+        my $id = <$fh>;
+        return if not defined $id;
+        ($id) = $id =~ m/^id ([a-f0-9]+)$/m;
+        my ($duration) = <$fh> =~ m/^duration (\d+)$/m;
+        my ($length)   = <$fh> =~ m/^content (\d+)$/m;
+        local $/ = \$length;
+        my $content = <$fh>;
+        my ($time) = grep { /^time: / } split( /\n/, $content );
+        $time =~ s/^time: //;
+        return App::Clk::Entry->new({
+            duration => $duration,
+            time     => to_localtime($time),
+            id       => $id,
+        });
+    });
+}
+
 =head2 hashed_path( $sha1, $template )
 
     my $path = hashed_path( $sha1, '%r/entries/%h' );
@@ -536,5 +579,24 @@ sub all {
     push @values, $self->next while defined $self->peek;
     return @values;
 }
+
+package App::Clk::Entry;
+
+=head1 Entry Interface
+
+=head2 new
+
+Don't use this method.  See L</entry_search> to obtain entry objects.
+
+=cut
+
+sub new {
+    my ($class, $args) = @_;
+    return bless $args, $class;
+}
+
+sub id       { shift->{id} }
+sub time     { shift->{time} }
+sub duration { shift->{duration} }
 
 1;
