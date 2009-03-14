@@ -1,6 +1,7 @@
 package App::Clk::Report;
 use strict;
 use warnings;
+use App::Clk::Util qw( to_localtime );
 
 sub Report () { __PACKAGE__ }
 
@@ -59,16 +60,6 @@ sub next {
     $entry->{duration} = $duration if defined $duration;
 
     return $entry;
-}
-
-sub to_localtime {
-    my ($iso) = @_;
-    my @parts = reverse split /[TZ:-]/, $iso;
-    $parts[4]--;  # month is 0-based
-    $parts[5] -= 1900;  # year is 1900-based
-
-    require Time::Local;
-    return scalar Time::Local::timegm(@parts);
 }
 
 sub parse_entry {

@@ -2,6 +2,14 @@ package App::Clk::Util;
 use strict;
 use warnings;
 
+=head1 NAME
+
+App::Clk::Util - utility functions for clk
+
+=head1 FUNCTIONS
+
+=cut
+
 sub import {
     my (@sub_names) = @_;
 
@@ -31,6 +39,23 @@ sub timeline_root {
     my $user_hash = Digest::SHA1::sha1_hex($user_identity);
 
     return hashed_path( $user_hash, '%r/timelines/%h' );
+}
+
+=head2 to_localtime($iso)
+
+Parses an ISO datetime string and returns the equivalent time in epoch
+seconds.
+
+=cut
+
+sub to_localtime {
+    my ($iso) = @_;
+    my @parts = reverse split /[TZ:-]/, $iso;
+    $parts[4]--;  # month is 0-based
+    $parts[5] -= 1900;  # year is 1900-based
+
+    require Time::Local;
+    return scalar Time::Local::timegm(@parts);
 }
 
 # given a string representation of an instant in time, it returns
