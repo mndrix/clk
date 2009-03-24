@@ -1,17 +1,18 @@
+# needed before releasing to CPAN
 * clk edit
 * clk rm
-* clk in /something-rare (clk in by searching for a template)
 * clk pull
 * clk push
+
+# nice to have
+* clk in /something-rare (clk in by searching for a template)
 * go through an optimization phase to make sure everything is fast
     * run and optimize clk on askos. it makes everything seem slow :-)
     * implement clk in C so that it loads really fast
-    * make sure that clk doesn't adjust PATH or PERL5LIB multiple times
-      this could make the PATH really long
 * implement more instant spec units (we only support m=minutes now)
+* reduce the number of module dependencies
 
-
-# at some point we might want to do these too
+# pie in the sky
 * implement a general language for specifying time periods.  A time period
   can be specified as an amount of time to go backward from now followed by
   a command for choosing the enclosing duration.  For instance 'yesterday'
