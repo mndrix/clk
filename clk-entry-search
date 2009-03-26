@@ -115,7 +115,7 @@ sub emit {
     if ( $outputting{duration} ) {
         die "TODO: Cannot output duration for a single entry\n"
             if not ref $entry;
-        my $next_entry = $entry->[2]->peek;
+        my $next_entry = exists $entry->[3] ? $entry->[3] : $entry->[2]->peek;
         my $next_time = $next_entry
                         ? $next_entry->[0]
                         : ( $ENV{CLK_TIME} || time )
@@ -145,6 +145,7 @@ sub search_by_tail {
     my @found;
     while ( my $entry = $timeline->next ) {
         $entry->[2] = $timeline;
+        $entry->[3] = $found[0];  # the one that follows us chronologically
         unshift @found, $entry;
         last if @found == $tail;
     }
