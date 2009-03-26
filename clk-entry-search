@@ -115,7 +115,7 @@ sub emit {
     if ( $outputting{duration} ) {
         die "TODO: Cannot output duration for a single entry\n"
             if not ref $entry;
-        my $next_entry = $entry->[2]->peek;
+        my $next_entry = exists $entry->[3] ? $entry->[3] : $entry->[2]->peek;
         my $next_time = $next_entry
                         ? $next_entry->[0]
                         : ( $ENV{CLK_TIME} || time )
@@ -145,6 +145,7 @@ sub search_by_tail {
     my @found;
     while ( my $entry = $timeline->next ) {
         $entry->[2] = $timeline;
+        $entry->[3] = $found[0];  # the one that follows us chronologically
         unshift @found, $entry;
         last if @found == $tail;
     }
@@ -204,7 +205,12 @@ This option should typically not be used directly.  Instead, call C<clk fsck>
 to perform a variety of integrity checks.  When this option is used, it
 verifies the integrity of the timelines.
 
-=head2 --output 'content'
+=head2 --output LIST
+
+C<LIST> is a comma-separated list of the information that you want included in
+the output.  Acceptable values and their meanings are described next.
+
+=head3 content
 
 Instead of printing just the entry IDs to STDOUT, include the content of each
 matching entry.  The output format looks like:
@@ -225,6 +231,16 @@ The following line is
 
 where C<$length> indicates the length of the entry's content.  That many
 bytes worth of content follow the newline on the C<content> line.
+
+=head3 duration
+
+Similar in format to L</content>, specifying 'duration' includes a line like
+
+    duration 1234
+
+immediately after the 'id' line.  It specifies the time, in seconds, between
+this entry and the next one.  If there is no next entry, it indicates the time
+that has passed since this entry was created.
 
 =head2 --period period
 

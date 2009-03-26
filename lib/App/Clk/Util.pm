@@ -2,6 +2,14 @@ package App::Clk::Util;
 use strict;
 use warnings;
 
+=head1 NAME
+
+App::Clk::Util - utility functions for clk
+
+=head1 FUNCTIONS
+
+=cut
+
 sub import {
     my (@sub_names) = @_;
 
@@ -31,6 +39,23 @@ sub timeline_root {
     my $user_hash = Digest::SHA1::sha1_hex($user_identity);
 
     return hashed_path( $user_hash, '%r/timelines/%h' );
+}
+
+=head2 to_localtime($iso)
+
+Parses an ISO datetime string and returns the equivalent time in epoch
+seconds.
+
+=cut
+
+sub to_localtime {
+    my ($iso) = @_;
+    my @parts = reverse split /[TZ:-]/, $iso;
+    $parts[4]--;  # month is 0-based
+    $parts[5] -= 1900;  # year is 1900-based
+
+    require Time::Local;
+    return scalar Time::Local::timegm(@parts);
 }
 
 # given a string representation of an instant in time, it returns
@@ -245,6 +270,49 @@ sub enclosing_year {
         Time::Local::timelocal(@begin_parts),
         Time::Local::timelocal(@end_parts)
     );
+}
+
+=head2 entry_search($positional, $named)
+
+Given an arrayref of C<$positional> arguments and a hashref of C<$named>
+arguments (both optional), returns an iterator (see L</Iterator Interface>)
+which produces entry objects (see L</Entry Interface>).
+
+=cut
+
+sub entry_search {
+    my ($positional) = grep { ref $_ eq 'ARRAY' } @_;
+    my ($named)      = grep { ref $_ eq 'HASH'  } @_;
+
+    # build a command-line for clk-entry-search
+    my @arguments;
+    $named ||= {};
+    while ( my ($key, $value) = each %$named ) {
+        push @arguments, "--$key", $value;
+    }
+    push @arguments, @{ $positional || [] };
+    unshift @arguments, '--output content,duration';  # optimize later
+
+    # let clk-entry-search do the hard work
+    my $command = join ' ', './clk', 'entry-search', @arguments;
+    open my $fh, '-|', $command
+        or die "Unable to run clk entry-search";
+    return iterator( sub {
+        my $id = <$fh>;
+        return if not defined $id;
+        ($id) = $id =~ m/^id ([a-f0-9]+)$/m;
+        my ($duration) = <$fh> =~ m/^duration (\d+)$/m;
+        my ($length)   = <$fh> =~ m/^content (\d+)$/m;
+        local $/ = \$length;
+        my $content = <$fh>;
+        my ($time) = grep { /^time: / } split( /\n/, $content );
+        $time =~ s/^time: //;
+        return App::Clk::Entry->new({
+            duration => $duration,
+            time     => to_localtime($time),
+            id       => $id,
+        });
+    });
 }
 
 =head2 hashed_path( $sha1, $template )
@@ -511,5 +579,24 @@ sub all {
     push @values, $self->next while defined $self->peek;
     return @values;
 }
+
+package App::Clk::Entry;
+
+=head1 Entry Interface
+
+=head2 new
+
+Don't use this method.  See L</entry_search> to obtain entry objects.
+
+=cut
+
+sub new {
+    my ($class, $args) = @_;
+    return bless $args, $class;
+}
+
+sub id       { shift->{id} }
+sub time     { shift->{time} }
+sub duration { shift->{duration} }
 
 1;
