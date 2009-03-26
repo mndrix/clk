@@ -24,9 +24,19 @@ sub pretty_duration {
 
     # make it pretty
     my $duration = $entry->{duration};
-    return sprintf("%dh", int($duration/60/60)) if $duration > 60*60;
-    return sprintf("%dm", int($duration/60   )) if $duration > 60;
-    return sprintf("%ds", int($duration      ));
+    my @units = (
+        w => 60*60*24*7,
+        d => 60*60*24,
+        h => 60*60,
+        m => 60,
+        s => 1,
+    );
+    while ( my ( $letter, $seconds ) = splice @units, 0, 2 ) {
+        return sprintf( "%d$letter", int( $duration / $seconds ) )
+          if $duration > $seconds;
+    }
+
+    die "I can't make the duration $duration pretty\n";
 }
 
 __END__
