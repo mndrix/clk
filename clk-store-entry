@@ -1,7 +1,12 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use App::Clk::Util qw( clk_root timeline_root );
+use App::Clk::Util qw(
+    append_deletions_log
+    clk_root
+    timeline_root
+    is_deleted_entry
+);
 sub lock_file ($&);  # predeclare for some nicer syntax
 
 my $root = clk_root();
@@ -23,6 +28,13 @@ open my $entry_fh, '>', "$root/entries/$hash/$rest"
     or die "Could not store entry in $root/entries/$hash/$rest: $!\n";
 print {$entry_fh} $entry;
 close $entry_fh;
+
+# if we're restoring an old entry, we must only append the deletions log
+if ( is_deleted_entry($entry_id) ) {
+    append_deletions_log( 'u', $entry_id );  # undelete
+    print "$entry_id\n";
+    exit;
+}
 
 # look through each timeline for one that can hold this entry
 my $timelines_dir = timeline_root($user_identity);

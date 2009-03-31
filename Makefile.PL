@@ -31,6 +31,7 @@ install_script 'clk-fsck';
 install_script 'clk-in';
 install_script 'clk-list';
 install_script 'clk-out';
+install_script 'clk-rm';
 install_script 'clk-store-entry';
 
 tests_recursive;
