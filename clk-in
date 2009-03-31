@@ -14,7 +14,10 @@ while ( $i <= $#ARGV ) {
         my $instant = $ARGV[ $i + 1 ];
         local $@;
         $time = eval { resolve_instant($instant) };
-        die "Invalid instant for --at: $instant\n" if not defined $time;
+        if ( not defined $time ) {
+            chomp $@;
+            die "Invalid instant for --at: $instant ($@)\n";
+        }
         splice @ARGV, $i, 2;    # remove the processed arguments
         next;
     }
