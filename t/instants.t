@@ -51,6 +51,7 @@ while ( my ($phrase, $tests) = splice(@phrases, 0, 2) ) {
 
 # test for some failure conditions
 {
+    local $ENV{CLK_IDENTITY} = 'nobody';  # avoid identity warnings
     my $scalar = eval { resolve_instant('invalid instant') };
     like( $@, qr/^Unknown instant description:/, 'invalid instant exception' );
     is( $scalar, undef, 'invalid instant in scalar context' );
