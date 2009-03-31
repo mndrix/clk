@@ -30,6 +30,11 @@ sub clk_root {
     return $root;
 }
 
+# returns the current time (accounting for environment overrides)
+sub now {
+    return $ENV{CLK_TIME} || time;
+}
+
 # given a single user identity, returns the path of the root of the timeline
 # directory
 sub timeline_root {
@@ -67,7 +72,7 @@ sub to_localtime {
 #     minutes in the past
 sub resolve_instant {
     my ($string) = @_;
-    my $time = $ENV{CLK_TIME} || time;
+    my $time = now();
     return $time           if $string eq 'now';
     return $string         if $string =~ m/^\d+$/;     # epoch seconds
     return $time - 60 * $1 if $string =~ m/^(\d+)m/;
@@ -88,7 +93,7 @@ If the period description is not recognized, an exception is thrown.
 sub resolve_period {
     my ($period) = shift;
     $period = q{} if not defined $period;
-    my $time = $ENV{CLK_TIME} || time;
+    my $time = now();
 
     # a list of coderefs for handling date periods
     my @handlers = (
