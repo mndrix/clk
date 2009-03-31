@@ -8,6 +8,7 @@ use App::Clk::Util qw( clk_root now resolve_instant );
 my $storing_entry = 1;
 our $time = now();
 our $exact = 0;
+our $quiet = 0;
 my $i = 0;
 while ( $i <= $#ARGV ) {
     if ( $ARGV[$i] eq '--at' ) {
@@ -20,6 +21,11 @@ while ( $i <= $#ARGV ) {
             die "Invalid instant for --at: $instant ($@)\n";
         }
         splice @ARGV, $i, 2;    # remove the processed arguments
+        next;
+    }
+    elsif ( $ARGV[$i] eq '--quiet' ) {
+        $quiet = 1;
+        splice @ARGV, $i, 1;    # remove the processed arguments
         next;
     }
     elsif ( $ARGV[$i] eq '--exact' ) {
@@ -103,7 +109,7 @@ if ($storing_entry) {
     close $writer;    # send EOF
     my $entry_id = <$reader>;
     waitpid $pid, 0;
-    print $entry_id if $entry_id;
+    print $entry_id if $entry_id and not $quiet;
 }
 
 ##########################################################################
@@ -165,6 +171,10 @@ Only display the new entry's content on STDOUT, don't put a copy in the entry
 store.  This option is mostly useful for testing and scripting.  Without
 this option, I<clk in> sends the entry content to L<clk-store-entry> to
 be saved in the entry store.
+
+=head2 --quiet
+
+Don't print the ID of the newly created entry.
 
 =head1 HOOKS
 
