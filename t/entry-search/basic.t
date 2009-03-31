@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 27;
+use Test::More tests => 36;
 use App::Clk::Test;
 use App::Clk::Util qw( entry_search );
 
@@ -30,6 +30,22 @@ clk_setup_test({ make_data => 1 });
 {
     my $entries = entry_search({ tail => 2 });
     my @expect = (
+        [ '0422f139d6becb2a1451b3f2228f4bf633098900', 1223350590 ],
+        [ 'dbe3e01151ad7734842e353b9fea5668f1c6e75f', 1223436966 ],
+    );
+    while ( my $entry = $entries->next ) {
+        my ( $id, $time ) = @{ shift @expect };
+        isa_ok( $entry, 'App::Clk::Entry' );
+        is( $entry->id, $id );
+        is( $entry->time, $time );
+    }
+}
+
+# command line options with multiple arguments
+{
+    my $entries = entry_search({ between => [ 1223350560, 1223436970 ] });
+    my @expect = (
+        [ 'cf0b2824e2c9f3a4736c0f8a6e0bb5e208f67d98', 1223350566 ],
         [ '0422f139d6becb2a1451b3f2228f4bf633098900', 1223350590 ],
         [ 'dbe3e01151ad7734842e353b9fea5668f1c6e75f', 1223436966 ],
     );

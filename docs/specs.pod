@@ -39,6 +39,13 @@ Acceptable time units are:
 
     m - minutes
 
+=head2 entry patterns
+
+Any pattern that can uniquely identify a single entry can also be used to
+specify an instant.  If an instant is expected and it doesn't match any of the
+above formats, it's assumed to be an entry pattern.  The matching entry's
+time is used as the instant.
+
 =head1 Period Formats
 
 Conceptually, a period can be defined by two instants.  One instant

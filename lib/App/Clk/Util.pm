@@ -30,6 +30,11 @@ sub clk_root {
     return $root;
 }
 
+# returns the current time (accounting for environment overrides)
+sub now {
+    return $ENV{CLK_TIME} || time;
+}
+
 # given a single user identity, returns the path of the root of the timeline
 # directory
 sub timeline_root {
@@ -60,19 +65,23 @@ sub to_localtime {
 
 # given a string representation of an instant in time, it returns
 # that instant as the number of seconds since the epoch.  Supported
-# instant formats are:
-#
-#   * a number of seconds since the epoch
-#   * a number followed by the letter "m" indicates a number of
-#     minutes in the past
+# instant formats documented in docs/specs.pod
 sub resolve_instant {
     my ($string) = @_;
-    my $time = $ENV{CLK_TIME} || time;
+    my $time = now();
     return $time           if $string eq 'now';
     return $string         if $string =~ m/^\d+$/;     # epoch seconds
     return $time - 60 * $1 if $string =~ m/^(\d+)m/;
 
-    die "Unknown instant description: $string\n";
+    # can we resolve the instant as an entry?
+    my $entries = entry_search([$string]);
+    my $entry = $entries->next;
+    die "Unknown instant description: $string\n" if not $entry;
+    die   "Resolving instant as entry pattern '$string': "
+        . "more than one matching entry\n"
+        if $entries->next;
+
+    return $entry->time;
 }
 
 =head2 resolve_period
@@ -88,7 +97,7 @@ If the period description is not recognized, an exception is thrown.
 sub resolve_period {
     my ($period) = shift;
     $period = q{} if not defined $period;
-    my $time = $ENV{CLK_TIME} || time;
+    my $time = now();
 
     # a list of coderefs for handling date periods
     my @handlers = (
@@ -288,7 +297,7 @@ sub entry_search {
     my @arguments;
     $named ||= {};
     while ( my ($key, $value) = each %$named ) {
-        push @arguments, "--$key", $value;
+        push @arguments, "--$key", ( ref $value ? @$value : $value );
     }
     push @arguments, @{ $positional || [] };
     unshift @arguments, '--output content,duration';  # optimize later

@@ -2,11 +2,11 @@
 use strict;
 use warnings;
 use IPC::Open2;
-use App::Clk::Util qw( clk_root resolve_instant );
+use App::Clk::Util qw( clk_root now resolve_instant );
 
 # process command line arguments
 my $storing_entry = 1;
-our $time = $ENV{CLK_TIME} || time;
+our $time = now();
 my $i = 0;
 while ( $i <= $#ARGV ) {
     if ( $ARGV[$i] eq '--at' ) {
@@ -14,7 +14,10 @@ while ( $i <= $#ARGV ) {
         my $instant = $ARGV[ $i + 1 ];
         local $@;
         $time = eval { resolve_instant($instant) };
-        die "Invalid instant for --at: $instant\n" if not defined $time;
+        if ( not defined $time ) {
+            chomp $@;
+            die "Invalid instant for --at: $instant ($@)\n";
+        }
         splice @ARGV, $i, 2;    # remove the processed arguments
         next;
     }
