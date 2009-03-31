@@ -37,7 +37,8 @@ sub pretty_duration {
     }
     return '0s' if $duration == 0;
 
-    die "I can't make the duration $duration pretty\n";
+    warn "I can't make the duration $duration pretty\n";
+    return '';
 }
 
 __END__
