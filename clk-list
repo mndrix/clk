@@ -33,8 +33,9 @@ sub pretty_duration {
     );
     while ( my ( $letter, $seconds ) = splice @units, 0, 2 ) {
         return sprintf( "%d$letter", int( $duration / $seconds ) )
-          if $duration > $seconds;
+          if $duration >= $seconds;
     }
+    return '0s' if $duration == 0;
 
     die "I can't make the duration $duration pretty\n";
 }
