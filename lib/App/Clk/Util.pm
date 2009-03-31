@@ -293,7 +293,7 @@ sub entry_search {
     my @arguments;
     $named ||= {};
     while ( my ($key, $value) = each %$named ) {
-        push @arguments, "--$key", $value;
+        push @arguments, "--$key", ( ref $value ? @$value : $value );
     }
     push @arguments, @{ $positional || [] };
     unshift @arguments, '--output content,duration';  # optimize later
