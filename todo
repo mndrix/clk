@@ -1,6 +1,4 @@
 # needed before releasing to CPAN
-* clk edit
-* clk rm
 * clk pull
 * clk push
 
@@ -9,12 +7,8 @@
 * clk gc (remove deletions, compress entries, etc)
 * go through an optimization phase to make sure everything is fast
     * run and optimize clk on askos. it makes everything seem slow :-)
-    * implement clk in C so that it loads really fast
-* implement more instant spec units (we only support m=minutes now)
 * reduce the number of module dependencies
-* it would be easy enough to make "clk rm --undo" which would undo the
-  most recent deletion.  it would just search deletions.log for the most
-  recent delete command.  Then it'd undelete that entry.
+* implement more instant spec units (we only support m=minutes now)
 
 # pie in the sky
 * implement a general language for specifying time periods.  A time period
@@ -23,5 +17,4 @@
   means 'go back one day and choose the enclosing day'.  This could be
   denoted in terms of timespecs by appending the duration with something
   like '1d@d' meaning '1d = 1 day ago' and '@d = the enclosing day'
-* the timeline should use TAI64N to specify the time (to provide room for
-  growth should sub-second resolution ever be needed)
+* allow for subsecond time resolution
