@@ -334,8 +334,15 @@ has been un/deleted.
 
 sub append_deletions_log {
     my ($kind, $entry_id) = @_;
-    die "'$kind' is not a valid deletion log entry kind\n"
-      if $kind ne 'd' and $kind ne 'u';
+
+    # make sure we've read the deletions log
+    our $deleted_entries;
+    is_deleted_entry($entry_id);
+    $deleted_entries->{$entry_id}
+        = $kind eq 'd' ? 1
+        : $kind eq 'u' ? 0
+        : die "'$kind' is not a valid deletion log entry kind\n"
+        ;
 
     my $root = clk_root();
     my $log = "$root/deletions.log";
