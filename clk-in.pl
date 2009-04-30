@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use Getopt::Long;
 use POSIX qw( strftime );
+use Time::HiRes qw( gettimeofday );
 
 my $message = '';
 my @tags;
@@ -19,8 +20,14 @@ for my $tag (@tags) {
 
 my @parts;
 push @parts, sprintf( "identity:%s", 'michael@ndrix.com' );
-push @parts, sprintf( "time:%s",     strftime( '%FT%TZ', gmtime ) );
+push @parts, sprintf( "time:%s",     iso8601_now() );
 push @parts, sprintf( "tags:%s",     join( ',', @tags ) ) if @tags;
 push @parts, sprintf( "message:%s",  $message );
 my $line = join "\t", @parts;
 print "$line\n";
+
+sub iso8601_now {
+    my ( $seconds, $microseconds ) = gettimeofday();
+    my $fraction = sprintf( '%06d', $microseconds );
+    return strftime( "%FT%T.${fraction}Z", gmtime($seconds) );
+}
