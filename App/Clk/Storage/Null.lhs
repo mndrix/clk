@@ -3,9 +3,9 @@ testing.
 
 > module App.Clk.Storage.Null where
 > import App.Clk.Storage
-> data StorageNull = Null
+> data StorageNull = StorageNull
 > instance Storage StorageNull where
->   open   _              = do { putStrLn "opening Null storage"; return Null }
+>   open   s _            = do { putStrLn "opening Null storage"; return s }
 >   insert _ _            = putStrLn "inserting"
 >   remove _ _            = putStrLn "removing"
 >   find_by_id _ _        = return Nothing
