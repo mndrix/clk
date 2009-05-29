@@ -1,6 +1,5 @@
 > module App.Clk where
 > import Data.Time (UTCTime)
-> import App.Clk.Storage.Null
 
 > data Event  = Event Entity Time Subject Tags
 
@@ -36,7 +35,8 @@ Some functions over the Event type
 > type EventID = String
 
 
-identity    :: Event -> EventID
+> identity    :: Event -> EventID
+> identity e = undefined
 
 A unique identifier for this event.  It's probably a hash of the Event
 parts in some canonical representation.  The canonical representation
@@ -45,59 +45,23 @@ SHA-1 hash of a tab separated list of entity, time, subject and tags.
 The strings should be considered lists of bytes so that we don't have
 to choose a preferred encoding.
 
-entity      :: Event -> Entity
-time        :: Event -> Time
-subject     :: Event -> Subject
-tags        :: Event -> Tags
+> entity :: Event -> Entity
+> entity e = undefined
+> time :: Event -> Time
+> time e = undefined
+> subject :: Event -> Subject
+> subject e = undefined
+> tags :: Event -> Tags
+> tags e = undefined
 
 Accessors for the parts of an event.
 
-set_time    :: Event -> Time -> Event
+> set_time    :: Event -> Time -> Event
+> set_time e t = undefined
 
 Create a new Event from an existing event by changing the time.  This will be
 useful when a user wants to resume work on an event that was started earlier.
 For instance "clk in e32ec5"
-
-
-> type Directory = FilePath
-
-A directory on a file system.
-
-
-A type class defining methods that storage implementations must provide.
-
-> class Storage a where
-
-The idea is that almost any technique for storing events will want some place
-to locally record state.  A flat-file implementation would use a single file.
-A key-value store would need to store its data files.  A database storage
-mechanism may not need to store anything (connection info would probably
-be in configuration), so it can just ignore the directory.
-
->   open              :: Directory -> IO a
->   insert            :: a -> Event -> IO ()
->   remove            :: a -> Event -> IO ()
->   find_by_id        :: a -> EventID -> IO (Maybe Event)
->   find_by_id_prefix :: a -> String -> IO (Maybe Event)
->   find_between      :: a -> Time -> Time -> IO [Event]
-
-> get_user_entity :: IO Entity
-> get_user_entity = do
->   putStrLn "getting user entity"
->   return "michael@ndrix.org"
-
-This user's entity is most likely stored in a configuration file or an
-environment variable, so we'll need IO to retrieve it.
-
-> open_default_storage :: Storage a => IO a
-> open_default_storage = do
->   putStrLn "opening the default storage"
->   App.Clk.Storage.Null.open ""
-
-Again, with configuration or an environment variable, the user specifies
-his preferred method for storing his events.  A typical user may have
-events stored in multiple storage formats, but the default is the one used
-when inserting new events.
 
 
 This is a rough outline for how the 'clk ls' command might be

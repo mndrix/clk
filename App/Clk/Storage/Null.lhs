@@ -2,12 +2,12 @@ A storage module that does absolutely nothing.  It's useful for
 testing.
 
 > module App.Clk.Storage.Null where
-> import App.Clk
-> type App.Clk.Storage.Null = ()
-> instance Storage App.Clk.Storage.Null where
->   open   _              = return ()
->   insert _              = return ()
->   remove _              = return ()
->   find_by_id _ _        = return None
->   find_by_id_prefix _ _ = return None
+> import App.Clk.Storage
+> data StorageNull = Null
+> instance Storage StorageNull where
+>   open   _              = do { putStrLn "opening Null storage"; return Null }
+>   insert _ _            = putStrLn "inserting"
+>   remove _ _            = putStrLn "removing"
+>   find_by_id _ _        = return Nothing
+>   find_by_id_prefix _ _ = return Nothing
 >   find_between _ _ _    = return []

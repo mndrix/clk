@@ -1,5 +1,7 @@
 > module App.Clk.Command.In where
-> import App.Clk
+> import App.Clk (Event(..), Subject, Tags)
+> import App.Clk.Storage (insert)
+> import App.Clk.Config (get_user_entity, open_default_storage)
 > import Data.Time (getCurrentTime)
 
 This command creates a new event on a timeline.  It's the main
