@@ -1,41 +1,44 @@
 module App.Clk where
+import Data.List (intercalate)
 import Data.Time (UTCTime)
-
-data Event  = Event Entity Time Subject Tags
+import Data.Time.Format (formatTime)
+import System.Locale (defaultTimeLocale)
 
 -- In the clk data model, an Event is the most fundamental data structure.
 -- All else is inferred from these.
-
-type Entity = String
+data Event  = Event Entity Time Subject Tags
 
 -- Any string identifying the thing whose time is being tracked.  A
 -- decent choice is the user's email address.  If tracking the amount of
 -- time a room was occupied (or something), the room's floor and room
 -- number could be used.
-
-type Time   = UTCTime
+type Entity = String
 
 -- The precise time when this event occurred.
-
-type Subject= String
+type Time   = UTCTime
+time_string = formatTime defaultTimeLocale "%FT%T%QZ"
 
 -- A one line description of this event.  This is intended to be similar
 -- to an email's subject line
-
-type Tag    = String
-type Tags   = [Tag]
+type Subject= String
 
 -- These are the classic folksonomy style tags.  Each tag should be about
 -- a couple words long and classifies the event into arbitrary, possibly
 -- overlapping, categories.
+type Tag    = String
+type Tags   = [Tag]
 
-
--- Some functions over the Event type
-
+-- A unique identifier for an Event
 type EventID = String
 
+-- Some functions over the Event type
+instance Show Event where
+    show (Event e t s ts) = intercalate "\t" parts
+        where parts = [ e, time_string t, s, tags ]
+              tags  = intercalate "," ts
 
-identity    :: Event -> EventID
+
+identity :: Event -> EventID
 identity e = undefined
 
 -- A unique identifier for this event.  It's probably a hash of the Event
