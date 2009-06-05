@@ -14,6 +14,9 @@ options =
     ,   Option ['t'] ["tag"]     (ReqArg Tag     "TAG"    ) "event tags"
     ]
 
+isSubject ( Subject _ ) = True
+isSubject ( _         ) = False
+
 isTag ( Tag _ ) = True
 isTag ( _     ) = False
 
@@ -24,13 +27,14 @@ run argv = do
     putStrLn "running 'in'"
     store <- open_default_storage
     let (args, extra, error) = getOpt Permute options argv
-    command_in store (subject args) (tags args)
+    command_in store (subject args extra) (tags args)
 
 -- determine the subject from the command line flags
-subject :: [Flag] -> Subject
-subject [] = ""
-subject (  Subject s : _  ) = s
-subject (  _         : xs ) = subject xs
+subject :: [Flag] -> [String] -> Subject
+subject flags extra =
+    case filter isSubject flags of
+        []                -> unwords extra
+        ( Subject s : _ ) -> s
 
 -- determine the tags from the command line flags
 tags :: [Flag] -> Tags
