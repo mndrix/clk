@@ -1,6 +1,6 @@
 module App.Clk.Command.In where
 import App.Clk (Event(..), Subject, Tags)
-import App.Clk.Storage (Storage, insert)
+import App.Clk.Storage (Storage, insert, close)
 import App.Clk.Config (get_user_entity, open_default_storage)
 import Data.Time (getCurrentTime)
 import System.Console.GetOpt
@@ -28,6 +28,7 @@ run argv = do
     store <- open_default_storage
     let (args, extra, error) = getOpt Permute options argv
     command_in store (subject args extra) (tags args)
+    close store
 
 -- determine the subject from the command line flags
 subject :: [Flag] -> [String] -> Subject
