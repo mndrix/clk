@@ -15,3 +15,4 @@ instance Storage StorageDebug where
     find_by_id _ _ = undefined
     find_by_id_prefix _ _ = undefined
     find_between _ a b = undefined
+    close = putStrLn $ "closing"
