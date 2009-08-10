@@ -15,6 +15,7 @@ class Storage a where
 -- mechanism may not need to store anything (connection info would probably
 -- be in configuration), so it can just ignore the directory.
 
+    open              :: Directory -> IO a
     insert            :: a -> Event -> IO ()
     remove            :: a -> Event -> IO ()
     find_by_id        :: a -> EventID -> IO (Maybe Event)
