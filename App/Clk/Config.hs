@@ -8,7 +8,6 @@ import App.Clk.Storage.Debug (StorageDebug, empty)
 
 get_user_entity :: IO Entity
 get_user_entity = do
-  putStrLn "getting user entity"
   return "michael@ndrix.org"
 
 open_default_storage :: IO StorageDebug
