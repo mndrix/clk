@@ -8,7 +8,9 @@ to implement the commands.  dispatch is just a list of commands that
 we support
 
 > import App.Clk.Command.In
+> import App.Clk.Command.List
 > dispatch "in"    a = App.Clk.Command.In.run a
+> dispatch "list"  a = App.Clk.Command.List.run a
 > dispatch command _ = do
 >   putStrLn $ "There's no command named '" ++ command ++ "'"
 

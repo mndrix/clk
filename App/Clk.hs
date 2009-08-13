@@ -1,7 +1,7 @@
 module App.Clk where
 import Data.List (intercalate)
 import Data.Time (UTCTime)
-import Data.Time.Format (formatTime)
+import Data.Time.Format (formatTime, readTime)
 import System.Locale (defaultTimeLocale)
 
 -- In the clk data model, an Event is the most fundamental data structure.
@@ -16,7 +16,8 @@ type Entity = String
 
 -- The precise time when this event occurred.
 type Time   = UTCTime
-time_string = formatTime defaultTimeLocale "%FT%T%QZ"
+iso8601Format = "%FT%T%QZ"
+time_string = formatTime defaultTimeLocale iso8601Format
 
 -- A one line description of this event.  This is intended to be similar
 -- to an email's subject line
@@ -37,9 +38,25 @@ instance Show Event where
         where parts = [ e, time_string t, s, tags ]
               tags  = intercalate "," ts
 
+instance Read Event where
+    readsPrec _ s = [( newEvent $ split '\t' s, "" )]
+
+newEvent :: [String] -> Event
+newEvent [ e, tRaw, s, tsRaw ] =
+    Event e (parseUTCTime tRaw) s (split ',' tsRaw)
+
+parseUTCTime :: String -> UTCTime
+parseUTCTime s = readTime defaultTimeLocale iso8601Format s
 
 identity :: Event -> EventID
 identity e = undefined
+
+-- split a string into several pieces based on a delimiter
+split :: Char -> String -> [String]
+split delim s
+    | [] == rest = [token]
+    | otherwise  = token : split delim (tail rest)
+    where (token,rest) = span (/=delim) s
 
 -- A unique identifier for this event.  It's probably a hash of the Event
 -- parts in some canonical representation.  The canonical representation

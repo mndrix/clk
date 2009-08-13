@@ -21,4 +21,5 @@ class Storage a where
     find_by_id        :: a -> EventID -> IO (Maybe Event)
     find_by_id_prefix :: a -> String -> IO (Maybe Event)
     find_between      :: a -> Time -> Time -> IO [Event]
+    tail              :: a -> Int -> IO [Event]
     close             :: a -> IO ()
