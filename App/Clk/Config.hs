@@ -8,7 +8,7 @@ import App.Clk.Storage.Naive
 
 get_user_entity :: IO Entity
 get_user_entity = do
-  return "michael@ndrix.org"
+  return "michael@ndrix.com"
 
 open_default_storage :: IO StorageNaive
 open_default_storage = App.Clk.Storage.Naive.open "/tmp/clk/storage/debug/"
