@@ -21,6 +21,5 @@ insert_ e h = hPutStrLn h (show e)
 
 tail_ count h = do
     content <- hGetContents h
-    -- this is wrong but easy
-    return $! end $ map read $ lines content
-        where end x = drop ( length x - count) x
+    return $! map read $ end $ lines content
+        where end x = drop ( length x - count ) x
