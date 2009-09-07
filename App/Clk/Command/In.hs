@@ -2,6 +2,7 @@ module App.Clk.Command.In where
 import App.Clk (Event(..), Subject, Tags)
 import App.Clk.Storage (Storage, insert, close)
 import App.Clk.Config (get_user_entity, open_default_storage)
+import App.Clk.Command.List (command_list)
 import Data.Time (getCurrentTime)
 import System.Console.GetOpt
 import Data.Maybe (mapMaybe)
@@ -23,11 +24,12 @@ isTag ( _     ) = False
 -- This command creates a new event on a timeline.  It's the main
 -- technique for tracking one's time.
 
+run :: [String] -> IO ()
 run argv = do
-    putStrLn "running 'in'"
     store <- open_default_storage
     let (args, extra, error) = getOpt Permute options argv
     command_in store (subject args extra) (tags args)
+    command_list store 3    -- run 'list' to show context
     close store
 
 -- determine the subject from the command line flags
