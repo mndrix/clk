@@ -1,0 +1,8 @@
+name:           app-clk
+version:        0.1
+synopsis:       distributed time clock application
+license:        MIT
+author:         Michael Hendricks
+maintainer:     michael@ndrix.org
+build-depends:  base, process
+build-type:     Simple

@@ -44,6 +44,7 @@ instance Read Event where
 newEvent :: [String] -> Event
 newEvent [ e, tRaw, s, tsRaw ] =
     Event e (parseUTCTime tRaw) s (split ',' tsRaw)
+newEvent _ = error "Can only create an Event from 4 Strings"
 
 parseUTCTime :: String -> UTCTime
 parseUTCTime s = readTime defaultTimeLocale iso8601Format s
@@ -82,7 +83,6 @@ set_time e t = undefined
 -- Create a new Event from an existing event by changing the time.  This will be
 -- useful when a user wants to resume work on an event that was started earlier.
 -- For instance "clk in e32ec5"
-
 
 -- This is a rough outline for how the 'clk ls' command might be
 -- implemented.  Again, there's probably some code higher up which

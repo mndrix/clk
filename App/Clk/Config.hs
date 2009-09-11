@@ -12,3 +12,6 @@ get_user_entity = do
 
 open_default_storage :: IO StorageNaive
 open_default_storage = App.Clk.Storage.Naive.open "/tmp/clk/storage/debug/"
+
+clkPath :: String -> IO FilePath
+clkPath p = return $ "/tmp/clk/" ++ p

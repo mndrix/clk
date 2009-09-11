@@ -3,6 +3,7 @@ import App.Clk (Event(..), Subject, Tags)
 import App.Clk.Storage (Storage, insert, close)
 import App.Clk.Config (get_user_entity, open_default_storage)
 import App.Clk.Command.List (command_list)
+import App.Clk.Util
 import Data.Time (getCurrentTime)
 import System.Console.GetOpt
 import Data.Maybe (mapMaybe)
@@ -53,5 +54,7 @@ command_in :: Storage a => a -> Subject -> Tags -> IO ()
 command_in store subject tags = do
     t <- getCurrentTime
     e <- get_user_entity
-    insert store ( Event e t subject tags )
+    let event = Event e t subject tags
+    output <- run_hook "pre-in" [] (show event)
+    insert store $ read $ head $ lines output
     return ()
