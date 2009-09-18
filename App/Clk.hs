@@ -2,6 +2,7 @@ module App.Clk where
 import Data.List (intercalate)
 import Data.Time (UTCTime)
 import Data.Time.Format (formatTime, readTime)
+import Data.Period
 import System.Locale (defaultTimeLocale)
 
 -- In the clk data model, an Event is the most fundamental data structure.
@@ -44,13 +45,16 @@ instance Read Event where
 newEvent :: [String] -> Event
 newEvent [ e, tRaw, s, tsRaw ] =
     Event e (parseUTCTime tRaw) s (split ',' tsRaw)
-newEvent _ = error "Can only create an Event from 4 Strings"
+newEvent l = error $ "Can't create an Event from: "++show l
 
 parseUTCTime :: String -> UTCTime
 parseUTCTime s = readTime defaultTimeLocale iso8601Format s
 
 identity :: Event -> EventID
 identity e = undefined
+
+isBetween :: Period -> Event -> Bool
+isBetween (Period begin end) (Event _ t _ _) = begin <= t && t <= end
 
 -- split a string into several pieces based on a delimiter
 split :: Char -> String -> [String]

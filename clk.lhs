@@ -9,7 +9,9 @@ we support
 
 > import App.Clk.Command.In
 > import App.Clk.Command.List
+> import App.Clk.Command.Dump
 > dispatch "in"    a = App.Clk.Command.In.run a
+> dispatch "dump"  a = App.Clk.Command.Dump.run a
 > dispatch "list"  a = App.Clk.Command.List.run a
 > dispatch "out"   a = App.Clk.Command.In.run $ "out":a
 > dispatch command _ = do
