@@ -11,7 +11,9 @@ get_user_entity = do
   return "michael@ndrix.com"
 
 open_default_storage :: IO StorageNaive
-open_default_storage = App.Clk.Storage.Naive.open "/tmp/clk/storage/debug/"
+open_default_storage = do
+    path <- clkPath "storage/debug/"
+    App.Clk.Storage.Naive.open path
 
 clkPath :: String -> IO FilePath
-clkPath p = return $ "/tmp/clk/" ++ p
+clkPath p = return $ "/Users/michael/src/clk3/_clk/" ++ p
