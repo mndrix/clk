@@ -3,7 +3,12 @@ module App.Clk.Storage.Naive (StorageNaive, open) where
 import App.Clk (Event, isBetween)
 import App.Clk.Storage
 import Data.Period
-import System.IO (Handle, IOMode(..), withFile, hGetContents, hPutStrLn)
+import System.IO (
+    IOMode(..),
+    withFile,
+    hGetContents,
+    hPutStrLn
+    )
 
 data StorageNaive = StorageNaive FilePath
 instance Storage StorageNaive where
