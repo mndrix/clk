@@ -7,6 +7,7 @@ import Data.Time.Calendar.OrdinalDate (mondayStartWeek, toOrdinalDate)
 import System.Locale (defaultTimeLocale)
 
 data Period = Period UTCTime UTCTime
+type Encloser = Day -> (Integer,Integer)
 
 -- handy for testing
 instance Show Period where
@@ -15,55 +16,46 @@ instance Show Period where
                 iso = formatTime defaultTimeLocale iso8601Format
 
 parsePeriod :: String -> IO Period
-parsePeriod "today"     = calendarPeriod enclosingDay
-parsePeriod "this week" = calendarPeriod enclosingWeek
-parsePeriod "this month" = calendarPeriod enclosingMonth
-parsePeriod "this year"  = calendarPeriod enclosingYear
+parsePeriod "today"      = calendarPeriod day
+parsePeriod "this week"  = calendarPeriod week
+parsePeriod "this month" = calendarPeriod month
+parsePeriod "this year"  = calendarPeriod year
 parsePeriod "ever" = return $ Period (day 0) (day (2^16))
         where day = flip UTCTime (secondsToDiffTime 0) . ModifiedJulianDay
 parsePeriod p = error $ "Cannot parse period string '" ++ p ++ "'"
 
-calendarPeriod enclosing = do
+calendarPeriod e = do
     utc   <- getCurrentTime
     tz    <- getTimeZone utc
-    return $ enclosing tz $ utcToLocalTime tz utc
+    return $ enclosing tz e $ utcToLocalTime tz utc
 
-enclosingDay :: TimeZone -> LocalTime -> Period
-enclosingDay tz ( LocalTime day time ) = Period utcBegin utcEnd
+enclosing :: TimeZone -> Encloser -> LocalTime -> Period
+enclosing tz e ( LocalTime day _ ) = Period utcBegin utcEnd
     where
-        utcBegin = dayStart tz day
-        utcEnd   = dayEnd   tz day
+        (n, max) = e day
+        start    = addDays (1  -n) day
+        end      = addDays (max-n) day
+        utcBegin = dayStart tz start
+        utcEnd   = dayEnd   tz end
 
-enclosingWeek :: TimeZone -> LocalTime -> Period
-enclosingWeek tz ( LocalTime day _ ) = Period utcBegin utcEnd
-    where
-        dayOfWeek = fromIntegral $ snd $ mondayStartWeek day
-        monday   = addDays (1-dayOfWeek) day
-        sunday   = addDays (7-dayOfWeek) day
-        utcBegin = dayStart tz monday
-        utcEnd   = dayEnd   tz sunday
+day :: Encloser
+day _ = ( 1, 1 )
 
-enclosingMonth :: TimeZone -> LocalTime -> Period
-enclosingMonth tz ( LocalTime day _ ) = Period utcBegin utcEnd
+week :: Encloser
+week day = ( dayOfWeek, 7 )
+    where dayOfWeek = fromIntegral $ snd $ mondayStartWeek day
+
+month :: Encloser
+month day = ( fromIntegral dom, dayCount )
     where
         (year,month,dom) = toGregorian day
-        dayOfMonth = fromIntegral dom
-        dayCount = fromIntegral $ gregorianMonthLength year month
-        first    = addDays (1       -dayOfMonth) day
-        last     = addDays (dayCount-dayOfMonth) day
-        utcBegin = dayStart tz first
-        utcEnd   = dayEnd   tz last
+        dayCount         = fromIntegral $ gregorianMonthLength year month
 
-enclosingYear :: TimeZone -> LocalTime -> Period
-enclosingYear tz ( LocalTime day _ ) = Period utcBegin utcEnd
+year :: Encloser
+year day = ( fromIntegral doy, dayCount )
     where
         (year,doy) = toOrdinalDate day
-        dayOfYear  = fromIntegral doy
-        dayCount = if isLeapYear year then 366 else 365
-        first    = addDays (1       -dayOfYear) day
-        last     = addDays (dayCount-dayOfYear) day
-        utcBegin = dayStart tz first
-        utcEnd   = dayEnd   tz last
+        dayCount   = if isLeapYear year then 366 else 365
 
 dayStart tz day = localTimeToUTC tz $ LocalTime day $ TimeOfDay 0 0 0
 dayEnd   tz day = localTimeToUTC tz $ LocalTime day $ TimeOfDay 23 59 59
