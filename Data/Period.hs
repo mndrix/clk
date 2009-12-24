@@ -3,7 +3,7 @@ import Data.Time.Clock
 import Data.Time.Format (formatTime)
 import Data.Time.LocalTime
 import Data.Time.Calendar
-import Data.Time.Calendar.OrdinalDate (mondayStartWeek)
+import Data.Time.Calendar.OrdinalDate (mondayStartWeek, toOrdinalDate)
 import System.Locale (defaultTimeLocale)
 
 data Period = Period UTCTime UTCTime
@@ -18,6 +18,7 @@ parsePeriod :: String -> IO Period
 parsePeriod "today"     = calendarPeriod enclosingDay
 parsePeriod "this week" = calendarPeriod enclosingWeek
 parsePeriod "this month" = calendarPeriod enclosingMonth
+parsePeriod "this year"  = calendarPeriod enclosingYear
 parsePeriod "ever" = return $ Period (day 0) (day (2^16))
         where day = flip UTCTime (secondsToDiffTime 0) . ModifiedJulianDay
 parsePeriod p = error $ "Cannot parse period string '" ++ p ++ "'"
@@ -50,6 +51,17 @@ enclosingMonth tz ( LocalTime day _ ) = Period utcBegin utcEnd
         dayCount = fromIntegral $ gregorianMonthLength year month
         first    = addDays (1       -dayOfMonth) day
         last     = addDays (dayCount-dayOfMonth) day
+        utcBegin = dayStart tz first
+        utcEnd   = dayEnd   tz last
+
+enclosingYear :: TimeZone -> LocalTime -> Period
+enclosingYear tz ( LocalTime day _ ) = Period utcBegin utcEnd
+    where
+        (year,doy) = toOrdinalDate day
+        dayOfYear  = fromIntegral doy
+        dayCount = if isLeapYear year then 366 else 365
+        first    = addDays (1       -dayOfYear) day
+        last     = addDays (dayCount-dayOfYear) day
         utcBegin = dayStart tz first
         utcEnd   = dayEnd   tz last
 
