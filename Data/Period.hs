@@ -17,6 +17,7 @@ instance Show Period where
 parsePeriod :: String -> IO Period
 parsePeriod "today"     = calendarPeriod enclosingDay
 parsePeriod "this week" = calendarPeriod enclosingWeek
+parsePeriod "this month" = calendarPeriod enclosingMonth
 parsePeriod "ever" = return $ Period (day 0) (day (2^16))
         where day = flip UTCTime (secondsToDiffTime 0) . ModifiedJulianDay
 parsePeriod p = error $ "Cannot parse period string '" ++ p ++ "'"
@@ -40,6 +41,17 @@ enclosingWeek tz ( LocalTime day _ ) = Period utcBegin utcEnd
         sunday   = addDays (7-dayOfWeek) day
         utcBegin = dayStart tz monday
         utcEnd   = dayEnd   tz sunday
+
+enclosingMonth :: TimeZone -> LocalTime -> Period
+enclosingMonth tz ( LocalTime day _ ) = Period utcBegin utcEnd
+    where
+        (year,month,dom) = toGregorian day
+        dayOfMonth = fromIntegral dom
+        dayCount = fromIntegral $ gregorianMonthLength year month
+        first    = addDays (1       -dayOfMonth) day
+        last     = addDays (dayCount-dayOfMonth) day
+        utcBegin = dayStart tz first
+        utcEnd   = dayEnd   tz last
 
 dayStart tz day = localTimeToUTC tz $ LocalTime day $ TimeOfDay 0 0 0
 dayEnd   tz day = localTimeToUTC tz $ LocalTime day $ TimeOfDay 23 59 59
