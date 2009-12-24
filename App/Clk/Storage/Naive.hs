@@ -6,6 +6,7 @@ import Data.Period
 import System.IO (
     IOMode(..),
     withFile,
+    openFile,
     hGetContents,
     hPutStrLn
     )
@@ -17,7 +18,7 @@ instance Storage StorageNaive where
     remove _ e = putStrLn $ "removing: " ++ show e
     find_by_id _ _ = undefined
     find_by_id_prefix _ _ = undefined
-    findBetween (StorageNaive f) p = withFile f ReadMode (findBetween_ p)
+    findBetween (StorageNaive f) p = findBetween_ p f
     tail (StorageNaive f) c = withFile f ReadMode (tail_ c)
     close _ = return ()
 
@@ -30,7 +31,8 @@ tail_ count h = do
     return $! map read $ end $ lines content
         where end x = drop ( length x - count ) x
 
-findBetween_ :: Period -> Handle -> IO [Event]
-findBetween_ p h = do
+findBetween_ :: Period -> FilePath -> IO [Event]
+findBetween_ p f = do
+    h <- openFile f ReadMode
     content <- hGetContents h
     return $! filter ( isBetween p ) $ map read $ lines content
