@@ -1,9 +1,17 @@
 module Data.Period where
 import Data.Time.Clock
+import Data.Time.Format (formatTime)
 import Data.Time.LocalTime
 import Data.Time.Calendar
+import System.Locale (defaultTimeLocale)
 
 data Period = Period UTCTime UTCTime
+
+-- handy for testing
+instance Show Period where
+    show (Period p f) = iso p ++ " to " ++ iso f
+        where   iso8601Format = "%FT%T%QZ"
+                iso = formatTime defaultTimeLocale iso8601Format
 
 parsePeriod :: String -> IO Period
 parsePeriod "today" = do
