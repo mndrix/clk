@@ -23,7 +23,7 @@ main = do
 entryLine :: String -> UTCTime -> [String] -> String -> String
 entryLine e t ts m = intercalate "\t" [e,ymd,tags,m]
     where tags = intercalate "," ts
-          ymd  = strftime "%FT%TZ" t
+          ymd  = strftime "%FT%T%QZ" t
 
 strftime = formatTime defaultTimeLocale
 
