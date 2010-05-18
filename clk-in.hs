@@ -12,7 +12,7 @@ main = do
     -- display an entry line
     now <- getCurrentTime
     (tags,msg) <- fmap parseArgs getArgs
-    let line = entryLine "michael@ndrix.org" now [] msg
+    let line = entryLine "michael@ndrix.org" now tags msg
     putStrLn line
 
     -- save the entry to disk
@@ -39,8 +39,13 @@ folder clkDir t = intercalate "" [clkDir,"timeline/",file]
 -- init :: String -> IO ()
 -- rough equivalent of `mkdir -p ~/.clkq/timeline`
 
--- converts a list of arguments into a tags string and a message string
-parseArgs :: [String] -> (String,String)
+isTagWord :: String -> Bool
+isTagWord ('.':_) = True
+isTagWord _       = False
+
+-- converts a list of arguments into a tags list and a message string
+parseArgs :: [String] -> ([String],String)
 parseArgs args = (tags, msg)
-    where tags = ""
-          msg  = intercalate " " args
+    where (tagWords,msgWords) = partition isTagWord args
+          tags = map tail tagWords
+          msg  = intercalate " " msgWords
