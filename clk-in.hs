@@ -1,6 +1,7 @@
 -- This is intended to a very quick script being the simplest thing
 -- that could possibly work
 
+import App.Clk.Util
 import Data.List
 import Data.Time
 import Data.Time.Clock
@@ -26,11 +27,6 @@ entryLine e t ts m = intercalate "\t" [e,ymd,tags,m]
           ymd  = strftime "%FT%T%QZ" t
 
 strftime = formatTime defaultTimeLocale
-
-getClkDir :: IO String
-getClkDir = do
-    home <- getEnv "HOME"
-    return $ home ++ "/.clkq/"  -- q avoids collision with older data
 
 folder :: String -> UTCTime -> String
 folder clkDir t = intercalate "" [clkDir,"timeline/",file]
