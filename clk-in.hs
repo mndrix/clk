@@ -11,7 +11,7 @@ import System.Locale
 main = do
     -- display an entry line
     now <- getCurrentTime
-    msg <- fmap (intercalate " ") getArgs
+    (tags,msg) <- fmap parseArgs getArgs
     let line = entryLine "michael@ndrix.org" now [] msg
     putStrLn line
 
@@ -38,3 +38,9 @@ folder clkDir t = intercalate "" [clkDir,"timeline/",file]
 
 -- init :: String -> IO ()
 -- rough equivalent of `mkdir -p ~/.clkq/timeline`
+
+-- converts a list of arguments into a tags string and a message string
+parseArgs :: [String] -> (String,String)
+parseArgs args = (tags, msg)
+    where tags = ""
+          msg  = intercalate " " args
