@@ -1,5 +1,3 @@
-module App.Clk.Command.Ls where
-
 import App.Clk.Util
 import Data.Time.Clock
 import System.Directory
