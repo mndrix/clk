@@ -7,7 +7,6 @@ import Data.Time
 import Data.Time.Clock
 import Data.Time.Calendar
 import System.Environment
-import System.Locale
 
 main = do
     -- display an entry line
@@ -25,8 +24,6 @@ entryLine :: String -> UTCTime -> [String] -> String -> String
 entryLine e t ts m = intercalate "\t" [e,ymd,tags,m]
     where tags = intercalate "," ts
           ymd  = strftime "%FT%T%QZ" t
-
-strftime = formatTime defaultTimeLocale
 
 folder :: String -> UTCTime -> String
 folder clkDir t = intercalate "" [clkDir,"timeline/",file]
