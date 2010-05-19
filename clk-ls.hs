@@ -5,6 +5,18 @@ import Data.Time.Clock
 import System.Directory
 import Text.Regex.Posix
 
+type Name    = String
+type Tags    = [String]
+type Message = String
+data Entry   = Entry Name UTCTime Tags Message
+    deriving Show
+
+instance Read Entry where
+    readsPrec _ line = [( Entry name time tags msg, "" )]
+        where [name,timeS,tagsS,msg] = split '\t' line
+              tags = split ',' tagsS
+              time = strptime iso8601 timeS
+
 main = do
     now <- getCurrentTime
     clkDir <- getClkDir
