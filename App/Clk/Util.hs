@@ -17,3 +17,6 @@ split delim s
 
 strftime :: String -> UTCTime -> String
 strftime = formatTime defaultTimeLocale
+
+iso8601 :: String
+iso8601 = "%FT%T%QZ"

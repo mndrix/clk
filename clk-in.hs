@@ -23,7 +23,7 @@ main = do
 entryLine :: String -> UTCTime -> [String] -> String -> String
 entryLine e t ts m = intercalate "\t" [e,ymd,tags,m]
     where tags = intercalate "," ts
-          ymd  = strftime "%FT%T%QZ" t
+          ymd  = strftime iso8601 t
 
 folder :: String -> UTCTime -> String
 folder clkDir t = intercalate "" [clkDir,"timeline/",file]
