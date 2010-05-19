@@ -20,3 +20,6 @@ strftime = formatTime defaultTimeLocale
 
 iso8601 :: String
 iso8601 = "%FT%T%QZ"
+
+strptime :: String -> String -> UTCTime
+strptime = readTime defaultTimeLocale
