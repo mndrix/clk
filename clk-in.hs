@@ -19,6 +19,7 @@ main = do
     clkDir <- getClkDir
     let file = folder clkDir now
     appendFile file (line++"\n")
+    return ()
 
 entryLine :: String -> UTCTime -> [String] -> String -> String
 entryLine e t ts m = intercalate "\t" [e,ymd,tags,m]
