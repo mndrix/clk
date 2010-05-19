@@ -25,7 +25,7 @@ main = do
     now <- getCurrentTime
     clkDir <- getClkDir
     entries <- mostRecentMonthEntries clkDir
-    putStrLn $ show $ map show entries
+    putStrLn $ intercalate "\n" $ map show entries
 
 isMonthFile :: FilePath -> Bool
 isMonthFile p = p =~ "^[0-9]{4}-[0-9]{2}.txt$"
