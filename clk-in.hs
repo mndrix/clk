@@ -23,7 +23,7 @@ main = do
     return ()
 
 entryLine :: String -> UTCTime -> [String] -> String -> String
-entryLine e t ts m = show (Entry e t ts m)
+entryLine e t ts m = show (Entry e t ts m Nothing)
 
 folder :: String -> UTCTime -> String
 folder clkDir t = intercalate "" [clkDir,"timeline/",file]
