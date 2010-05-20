@@ -30,3 +30,8 @@ showUser tz (Entry name time tags msg dur) = intercalate "\t" parts
     where parts = [ userTime, tagsS, msg ]
           userTime = strftime "%m/%d %H:%M" $ utcToLocalTime tz time
           tagsS    = intercalate "," tags
+
+tween :: ( a -> a -> b ) -> [a] -> [b]
+tween _ [ ] = []
+tween _ [x] = []
+tween f (x:y:xs) = (x `f` y):(tween f (y:xs))
