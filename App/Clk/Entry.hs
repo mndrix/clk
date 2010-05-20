@@ -7,7 +7,7 @@ import Data.Time.Clock
 type Name    = String
 type Tags    = [String]
 type Message = String
-type Duration = Maybe Integer
+type Duration = Maybe NominalDiffTime
 data Entry    = Entry { name :: Name
                       , time :: UTCTime
                       , tags :: Tags
