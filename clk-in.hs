@@ -1,6 +1,7 @@
 -- This is intended to a very quick script being the simplest thing
 -- that could possibly work
 
+import App.Clk.Entry
 import App.Clk.Util
 import Data.List
 import Data.Time
@@ -22,9 +23,7 @@ main = do
     return ()
 
 entryLine :: String -> UTCTime -> [String] -> String -> String
-entryLine e t ts m = intercalate "\t" [e,ymd,tags,m]
-    where tags = intercalate "," ts
-          ymd  = strftime iso8601 t
+entryLine e t ts m = show (Entry e t ts m)
 
 folder :: String -> UTCTime -> String
 folder clkDir t = intercalate "" [clkDir,"timeline/",file]
