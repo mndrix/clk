@@ -8,7 +8,12 @@ type Name    = String
 type Tags    = [String]
 type Message = String
 type Duration = Maybe Integer
-data Entry    = Entry Name UTCTime Tags Message Duration
+data Entry    = Entry { name :: Name
+                      , time :: UTCTime
+                      , tags :: Tags
+                      , msg  :: Message
+                      , dur  :: Duration
+                      }
 
 instance Read Entry where
     readsPrec _ line = [( Entry name time tags msg Nothing, "" )]
