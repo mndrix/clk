@@ -15,7 +15,7 @@ split delim s
     | otherwise = token : split delim (tail rest)
     where (token,rest) = span (/=delim) s
 
-strftime :: String -> UTCTime -> String
+strftime :: FormatTime a => String -> a -> String
 strftime = formatTime defaultTimeLocale
 
 iso8601 :: String
