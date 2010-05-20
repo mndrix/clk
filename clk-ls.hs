@@ -9,7 +9,7 @@ main = do
     now <- getCurrentTime
     clkDir <- getClkDir
     entries <- mostRecentMonthEntries clkDir
-    putStrLn $ intercalate "\n" $ map show entries
+    putStrLn $ intercalate "\n" $ map showUser entries
 
 isMonthFile :: FilePath -> Bool
 isMonthFile p = p =~ "^[0-9]{4}-[0-9]{2}.txt$"
@@ -22,3 +22,9 @@ mostRecentMonthEntries clkDir = do
             [p] -> do
                 content <- readFile $ clkDir ++ "timeline/" ++ p
                 return $ map read $ lines content
+
+showUser :: Entry -> String
+showUser (Entry name time tags msg dur) = intercalate "\t" parts
+    where parts = [ userTime, tagsS, msg ]
+          userTime = strftime "%m/%d %H:%M" time
+          tagsS    = intercalate "," tags
