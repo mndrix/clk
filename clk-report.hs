@@ -6,9 +6,9 @@ import Text.Printf
 main = do
     entries <- mostRecentMonthEntries
     let reportable    = filter isReportable entries
-    let totalDuration = sum $ map (fromJust.dur) $ reportable
     let f = \s e -> Map.insertWith (+) (client e) (maybe 0 id $ dur e) s
     let byClient = foldl f Map.empty reportable
+    let totalDuration = sum $ Map.elems byClient
     putStrLn $ show byClient
     putStrLn $ printf "%.2f hours" (realToFrac (totalDuration/3600) ::Float)
 
