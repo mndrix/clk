@@ -9,7 +9,7 @@ main = do
     let f = \s e -> Map.insertWith (+) (client e) (maybe 0 id $ dur e) s
     let byClient = foldl f Map.empty entries
     let totalDuration = sum $ Map.elems byClient
-    putStrLn $ show byClient
+    putStrLn $ Map.showTree byClient
     putStrLn $ showDurationAsHours totalDuration
 
 isClockedOut :: Entry -> Bool
