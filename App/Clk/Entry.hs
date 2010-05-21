@@ -26,3 +26,11 @@ instance Show Entry where
         where parts = [ name, timeS, tagsS, msg ]
               timeS = strftime iso8601 time
               tagsS = intercalate "," tags
+
+setDuration :: Entry -> Entry -> Entry
+setDuration e0 e1 = e0{ dur = Just diffSeconds }
+    where diffSeconds = diffUTCTime (time e1) (time e0)
+
+setDurationNow :: Entry -> UTCTime -> Entry
+setDurationNow e0 t = e0{ dur = Just diffSeconds }
+    where diffSeconds = diffUTCTime t (time e0)
