@@ -19,16 +19,22 @@ isMonthFile p = p =~ "^[0-9]{4}-[0-9]{2}.txt$"
 
 mostRecentMonthFile :: String -> IO (Maybe String)
 mostRecentMonthFile clkDir = do
-        paths <- getDirectoryContents (clkDir++"timeline")
-        return $ listToMaybe $ filter isMonthFile paths
+        relPaths <- getDirectoryContents (clkDir++"timeline")
+        let relMonthPaths = filter isMonthFile relPaths
+        let absPaths = map (\x -> clkDir++"timeline/"++x) relMonthPaths
+        return $ listToMaybe absPaths
 
 mostRecentMonthEntries :: String -> UTCTime -> IO [Entry]
 mostRecentMonthEntries clkDir now = do
-        file <- mostRecentMonthFile clkDir
-        case file of
+    monthFile <- mostRecentMonthFile clkDir
+    monthFileEntries monthFile now
+
+monthFileEntries :: Maybe String -> UTCTime -> IO [Entry]
+monthFileEntries monthFile now = do
+        case monthFile of
             Nothing -> return []
             Just p  -> do
-                content <- readFile $ clkDir ++ "timeline/" ++ p
+                content <- readFile p
                 case map read (lines content) of
                     []  -> return []
                     [x] -> return [ setDurationNow x now ]
