@@ -1,4 +1,5 @@
 import App.Clk.Entry
+import Data.List
 import Data.Maybe
 import Data.Time.Clock
 import qualified Data.Map as Map
@@ -9,8 +10,10 @@ main = do
     let f = \s e -> Map.insertWith (+) (client e) (maybe 0 id $ dur e) s
     let byClient = foldl f Map.empty entries
     let totalDuration = sum $ Map.elems byClient
-    putStrLn $ Map.showTree byClient
-    putStrLn $ showDurationAsHours totalDuration
+    let rows = map showResult $ Map.toAscList byClient
+    putStrLn $ intercalate "\n" $ rows
+    putStrLn $ "\t" ++ (showDurationAsHours totalDuration)
+        where showResult (c,d) = printf "%s\t%s" c (showDurationAsHours d)
 
 isClockedOut :: Entry -> Bool
 isClockedOut = (=="out") . msg
