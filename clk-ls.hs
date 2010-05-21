@@ -8,29 +8,29 @@ import System.Directory
 import Text.Regex.Posix
 
 main = do
-    now <- getCurrentTime
     tz     <- getCurrentTimeZone
-    clkDir <- getClkDir
-    entries <- mostRecentMonthEntries clkDir now
+    entries <- mostRecentMonthEntries
     putStrLn $ intercalate "\n" $ map (showUser tz) $ entries
 
 isMonthFile :: FilePath -> Bool
 isMonthFile p = p =~ "^[0-9]{4}-[0-9]{2}.txt$"
 
-mostRecentMonthFile :: String -> IO (Maybe String)
-mostRecentMonthFile clkDir = do
+mostRecentMonthFile :: IO (Maybe String)
+mostRecentMonthFile = do
+        clkDir   <- getClkDir
         relPaths <- getDirectoryContents (clkDir++"timeline")
         let relMonthPaths = filter isMonthFile relPaths
         let absPaths = map (\x -> clkDir++"timeline/"++x) relMonthPaths
         return $ listToMaybe absPaths
 
-mostRecentMonthEntries :: String -> UTCTime -> IO [Entry]
-mostRecentMonthEntries clkDir now = do
-    monthFile <- mostRecentMonthFile clkDir
-    monthFileEntries monthFile now
+mostRecentMonthEntries :: IO [Entry]
+mostRecentMonthEntries = do
+    monthFile <- mostRecentMonthFile
+    monthFileEntries monthFile
 
-monthFileEntries :: Maybe String -> UTCTime -> IO [Entry]
-monthFileEntries monthFile now = do
+monthFileEntries :: Maybe String -> IO [Entry]
+monthFileEntries monthFile = do
+        now <- getCurrentTime
         case monthFile of
             Nothing -> return []
             Just p  -> do
@@ -39,6 +39,7 @@ monthFileEntries monthFile now = do
                     []  -> return []
                     [x] -> return [ setDurationNow x now ]
                     xs  -> return $ (tween setDuration xs) ++ [ setDurationNow (last xs) now ]
+
 showUser :: TimeZone -> Entry -> String
 showUser tz (Entry name time tags msg dur) = intercalate "\t" parts
     where parts = [ userTime, durS, tagsS, msg ]
