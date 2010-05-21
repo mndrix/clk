@@ -1,8 +1,11 @@
 module App.Clk.Util where
 
+import System.Directory
 import System.Locale
 import System.Environment
+import Data.Maybe
 import Data.Time
+import Text.Regex.Posix
 
 getClkDir :: IO String
 getClkDir = do
@@ -23,6 +26,17 @@ iso8601 = "%FT%T%QZ"
 
 strptime :: String -> String -> UTCTime
 strptime = readTime defaultTimeLocale
+
+isMonthFile :: FilePath -> Bool
+isMonthFile p = p =~ "^[0-9]{4}-[0-9]{2}.txt$"
+
+mostRecentMonthFile :: IO (Maybe String)
+mostRecentMonthFile = do
+        clkDir   <- getClkDir
+        relPaths <- getDirectoryContents (clkDir++"timeline")
+        let relMonthPaths = filter isMonthFile relPaths
+        let absPaths = map (\x -> clkDir++"timeline/"++x) relMonthPaths
+        return $ listToMaybe absPaths
 
 tween :: ( a -> a -> b ) -> [a] -> [b]
 tween _ [ ] = []

@@ -34,3 +34,20 @@ setDuration e0 e1 = e0{ dur = Just diffSeconds }
 setDurationNow :: Entry -> UTCTime -> Entry
 setDurationNow e0 t = e0{ dur = Just diffSeconds }
     where diffSeconds = diffUTCTime t (time e0)
+
+mostRecentMonthEntries :: IO [Entry]
+mostRecentMonthEntries = do
+    monthFile <- mostRecentMonthFile
+    monthFileEntries monthFile
+
+monthFileEntries :: Maybe String -> IO [Entry]
+monthFileEntries monthFile = do
+        now <- getCurrentTime
+        case monthFile of
+            Nothing -> return []
+            Just p  -> do
+                content <- readFile p
+                case map read (lines content) of
+                    []  -> return []
+                    [x] -> return [ setDurationNow x now ]
+                    xs  -> return $ (tween setDuration xs) ++ [ setDurationNow (last xs) now ]
