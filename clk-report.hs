@@ -26,7 +26,7 @@ isReportable e = (hasDuration e) && (isClockedIn e)
 
 type Client = String
 client :: Entry -> Client
-client e = maybe "" id $ listToMaybe $ filter isClientTag $ tags e
+client e = maybe "none" id $ listToMaybe $ filter isClientTag $ tags e
 
 type Tag = String
 isClientTag :: Tag -> Bool
