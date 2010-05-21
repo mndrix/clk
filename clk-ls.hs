@@ -11,7 +11,7 @@ main = do
     tz     <- getCurrentTimeZone
     clkDir <- getClkDir
     entries <- mostRecentMonthEntries clkDir
-    putStrLn $ intercalate "\n" $ map (showUser tz) $ tween setDuration entries
+    putStrLn $ intercalate "\n" $ map (showUser tz) $ entries
 
 isMonthFile :: FilePath -> Bool
 isMonthFile p = p =~ "^[0-9]{4}-[0-9]{2}.txt$"
@@ -23,8 +23,10 @@ mostRecentMonthEntries clkDir = do
             [] -> return []
             [p] -> do
                 content <- readFile $ clkDir ++ "timeline/" ++ p
-                return $ map read $ lines content
-
+                case map read (lines content) of
+                    []  -> return []
+                    [x] -> return [x]
+                    xs  -> return $ (tween setDuration xs) ++ [last xs]
 showUser :: TimeZone -> Entry -> String
 showUser tz (Entry name time tags msg dur) = intercalate "\t" parts
     where parts = [ userTime, durS, tagsS, msg ]
