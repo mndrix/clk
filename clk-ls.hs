@@ -21,4 +21,4 @@ showDur dur = case dur of
             x | x <       60 -> show (round x) ++ "s"
               | x <    60*60 -> show (round (x/60)) ++ "m"
               | x < 24*60*60 -> show (round (x/60/60)) ++ "h"
-            x                -> show (round (x/24/60/60)) ++ "d"
+              | otherwise    -> show (round (x/24/60/60)) ++ "d"
