@@ -11,7 +11,7 @@ main = do
     now <- getCurrentTime
     tz     <- getCurrentTimeZone
     clkDir <- getClkDir
-    entries <- mostRecentMonthEntries clkDir
+    entries <- mostRecentMonthEntries clkDir now
     putStrLn $ intercalate "\n" $ map (showUser tz) $ entries
 
 isMonthFile :: FilePath -> Bool
@@ -22,8 +22,8 @@ mostRecentMonthFile clkDir = do
         paths <- getDirectoryContents (clkDir++"timeline")
         return $ listToMaybe $ filter isMonthFile paths
 
-mostRecentMonthEntries :: String -> IO [Entry]
-mostRecentMonthEntries clkDir = do
+mostRecentMonthEntries :: String -> UTCTime -> IO [Entry]
+mostRecentMonthEntries clkDir now = do
         file <- mostRecentMonthFile clkDir
         case file of
             Nothing -> return []
@@ -31,8 +31,8 @@ mostRecentMonthEntries clkDir = do
                 content <- readFile $ clkDir ++ "timeline/" ++ p
                 case map read (lines content) of
                     []  -> return []
-                    [x] -> return [x]
-                    xs  -> return $ (tween setDuration xs) ++ [last xs]
+                    [x] -> return [ setDurationNow x now ]
+                    xs  -> return $ (tween setDuration xs) ++ [ setDurationNow (last xs) now ]
 showUser :: TimeZone -> Entry -> String
 showUser tz (Entry name time tags msg dur) = intercalate "\t" parts
     where parts = [ userTime, durS, tagsS, msg ]
@@ -43,6 +43,10 @@ showUser tz (Entry name time tags msg dur) = intercalate "\t" parts
 setDuration :: Entry -> Entry -> Entry
 setDuration e0 e1 = e0{ dur = Just diffSeconds }
     where diffSeconds = diffUTCTime (time e1) (time e0)
+
+setDurationNow :: Entry -> UTCTime -> Entry
+setDurationNow e0 t = e0{ dur = Just diffSeconds }
+    where diffSeconds = diffUTCTime t (time e0)
 
 tween :: ( a -> a -> b ) -> [a] -> [b]
 tween _ [ ] = []
