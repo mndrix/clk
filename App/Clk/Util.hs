@@ -23,3 +23,8 @@ iso8601 = "%FT%T%QZ"
 
 strptime :: String -> String -> UTCTime
 strptime = readTime defaultTimeLocale
+
+tween :: ( a -> a -> b ) -> [a] -> [b]
+tween _ [ ] = []
+tween _ [x] = []
+tween f (x:y:xs) = (x `f` y):(tween f (y:xs))

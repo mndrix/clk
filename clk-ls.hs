@@ -47,12 +47,6 @@ showUser tz (Entry name time tags msg dur) = intercalate "\t" parts
           tagsS    = intercalate "," tags
           durS     = maybe "" showDur dur
 
-
-tween :: ( a -> a -> b ) -> [a] -> [b]
-tween _ [ ] = []
-tween _ [x] = []
-tween f (x:y:xs) = (x `f` y):(tween f (y:xs))
-
 showDur :: NominalDiffTime -> String
 showDur dur = case dur of
             x | x <       60 -> show (round x) ++ "s"
