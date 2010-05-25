@@ -3,6 +3,7 @@ module App.Clk.Entry where
 import App.Clk.Util
 import Data.List
 import Data.Time.Clock
+import Data.Time.LocalTime
 
 type Name    = String
 type Tags    = [String]
@@ -26,6 +27,20 @@ instance Show Entry where
         where parts = [ name, timeS, tagsS, msg ]
               timeS = strftime iso8601 time
               tagsS = intercalate "," tags
+
+showUser :: TimeZone -> Entry -> String
+showUser tz (Entry name time tags msg dur) = intercalate "\t" parts
+    where parts = [ userTime, durS, tagsS, msg ]
+          userTime = strftime "%m/%d %H:%M" $ utcToLocalTime tz time
+          tagsS    = intercalate "," tags
+          durS     = maybe "" showDur dur
+
+showDur :: NominalDiffTime -> String
+showDur dur = case dur of
+            x | x <       60 -> show (round x) ++ "s"
+              | x <    60*60 -> show (round (x/60)) ++ "m"
+              | x < 24*60*60 -> show (round (x/60/60)) ++ "h"
+              | otherwise    -> show (round (x/24/60/60)) ++ "d"
 
 setDuration :: Entry -> Entry -> Entry
 setDuration e0 e1 = e0{ dur = Just diffSeconds }
