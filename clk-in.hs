@@ -13,7 +13,8 @@ main = do
     -- display an entry line
     now <- getCurrentTime
     (tags,msg) <- fmap parseArgs getArgs
-    let line = entryLine "michael@ndrix.org" now tags msg
+    let entry = Entry "michael@ndrix.org" now tags msg Nothing
+    let line = show entry
     putStrLn line
 
     -- save the entry to disk
@@ -21,9 +22,6 @@ main = do
     let file = folder clkDir now
     appendFile file (line++"\n")
     return ()
-
-entryLine :: String -> UTCTime -> [String] -> String -> String
-entryLine e t ts m = show (Entry e t ts m Nothing)
 
 folder :: String -> UTCTime -> String
 folder clkDir t = intercalate "" [clkDir,"timeline/",file]
