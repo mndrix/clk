@@ -3,6 +3,7 @@ module App.Clk.Util where
 import System.Directory
 import System.Locale
 import System.Environment
+import Data.List
 import Data.Maybe
 import Data.Time
 import Text.Regex.Posix
@@ -33,7 +34,8 @@ isMonthFile p = p =~ "^[0-9]{4}-[0-9]{2}.txt$"
 mostRecentMonthFile :: IO (Maybe String)
 mostRecentMonthFile = do
         clkDir   <- getClkDir
-        relPaths <- getDirectoryContents (clkDir++"timeline")
+        rawPaths <- getDirectoryContents (clkDir++"timeline")
+        let relPaths = reverse $ sort rawPaths
         let relMonthPaths = filter isMonthFile relPaths
         let absPaths = map (\x -> clkDir++"timeline/"++x) relMonthPaths
         return $ listToMaybe absPaths
