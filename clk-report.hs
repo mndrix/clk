@@ -12,9 +12,9 @@ main = do
 
     -- TODO replace 'after' with entries between two end points
     let after = withLocalTime tz now toMidnight
-    let isReportable e = (hasDuration e) && (isClockedIn e) && (time e > after)
+    let p e = all ($e) [ hasDuration, isClockedIn, (>after).time ]
 
-    entries <- fmap (filter isReportable) mostRecentMonthEntries
+    entries <- fmap (filter p) mostRecentMonthEntries
 --  putStrLn $ intercalate "\n" $ map show entries
     let f = \s e -> Map.insertWith (+) (client e) (maybe 0 id $ dur e) s
     let byClient = foldl f Map.empty entries
