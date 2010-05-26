@@ -10,10 +10,7 @@ main = do
     now <- getCurrentTime
     tz  <- getCurrentTimeZone
 
-    -- TODO replace 'after' with entries between two end points
-    let after = withLocalTime tz now toMidnight
-    let p e = all ($e) [ hasDuration, isClockedIn, (>after).time ]
-
+    let p = predicateFor tz now "today"
     entries <- fmap (filter p) mostRecentMonthEntries
 --  putStrLn $ intercalate "\n" $ map show entries
     let f = \s e -> Map.insertWith (+) (client e) (maybe 0 id $ dur e) s
@@ -23,6 +20,11 @@ main = do
     putStrLn $ intercalate "\n" $ rows
     putStrLn $ "\t" ++ (showDurationAsHours totalDuration)
         where showResult (c,d) = printf "%s\t%s" c (showDurationAsHours d)
+
+predicateFor :: TimeZone -> UTCTime -> String -> Entry -> Bool
+predicateFor tz now "today" e = all ($e) [hasDuration,isClockedIn,(>after).time]
+    where after = withLocalTime tz now toMidnight
+predicateFor _ _ period _ = error $ "Unknown period " ++ period
 
 isClockedOut :: Entry -> Bool
 isClockedOut = (=="out") . msg
