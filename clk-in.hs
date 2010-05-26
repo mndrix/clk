@@ -12,15 +12,15 @@ import System.Environment
 main = do
     -- display an entry line
     now <- getCurrentTime
+    tz  <- getCurrentTimeZone
     (tags,msg) <- fmap parseArgs getArgs
     let entry = Entry "michael@ndrix.org" now tags msg Nothing
-    let line = show entry
-    putStrLn line
+    putStrLn $ showUser tz entry
 
     -- save the entry to disk
     clkDir <- getClkDir
     let file = folder clkDir now
-    appendFile file (line++"\n")
+    appendFile file (show entry ++ "\n")
     return ()
 
 folder :: String -> UTCTime -> String
