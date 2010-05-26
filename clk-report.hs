@@ -5,10 +5,19 @@ import qualified Data.Map as Map
 import Data.Period
 import Data.Time.Clock
 import Data.Time.LocalTime
+import System.Console.GetOpt
+import System.Environment
 import Text.Printf
 
+data Flag = PeriodArg String -- -p or --period
+
 main = do
-    period <- parsePeriod "today"
+    args <- getArgs
+    let periodPhrase = case getOpt Permute options args of
+                            ([PeriodArg p], [], []) -> p
+                            otherwise               -> "today"
+    period <- parsePeriod periodPhrase
+
     let p e = all ($e) [ hasDuration, isClockedIn, isWithin period ]
     entries <- fmap (filter p) mostRecentMonthEntries
 
@@ -20,6 +29,9 @@ main = do
     putStrLn $ intercalate "\n" $ rows
     putStrLn $ "\t" ++ (showDurationAsHours totalDuration)
         where showResult (c,d) = printf "%s\t%s" c (showDurationAsHours d)
+
+options = [ Option ['p'] ["period"] (ReqArg PeriodArg "PERIOD") ""
+          ]
 
 isClockedOut :: Entry -> Bool
 isClockedOut = (=="out") . msg
