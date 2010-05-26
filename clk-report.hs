@@ -2,16 +2,16 @@ import App.Clk.Entry
 import Data.List
 import Data.Maybe
 import qualified Data.Map as Map
+import Data.Period
 import Data.Time.Clock
 import Data.Time.LocalTime
 import Text.Printf
 
 main = do
-    now <- getCurrentTime
-    tz  <- getCurrentTimeZone
-
-    let p = predicateFor tz now "today"
+    period <- parsePeriod "today"
+    let p e = all ($e) [ hasDuration, isClockedIn, isWithin period ]
     entries <- fmap (filter p) mostRecentMonthEntries
+
 --  putStrLn $ intercalate "\n" $ map show entries
     let f = \s e -> Map.insertWith (+) (client e) (maybe 0 id $ dur e) s
     let byClient = foldl f Map.empty entries
@@ -21,11 +21,6 @@ main = do
     putStrLn $ "\t" ++ (showDurationAsHours totalDuration)
         where showResult (c,d) = printf "%s\t%s" c (showDurationAsHours d)
 
-predicateFor :: TimeZone -> UTCTime -> String -> Entry -> Bool
-predicateFor tz now "today" e = all ($e) [hasDuration,isClockedIn,(>after).time]
-    where after = withLocalTime tz now toMidnight
-predicateFor _ _ period _ = error $ "Unknown period " ++ period
-
 isClockedOut :: Entry -> Bool
 isClockedOut = (=="out") . msg
 
@@ -34,6 +29,9 @@ isClockedIn = not . isClockedOut
 
 hasDuration :: Entry -> Bool
 hasDuration = isJust . dur
+
+isWithin :: Period -> Entry -> Bool
+isWithin period = within period . time
 
 type Client = String
 client :: Entry -> Client
