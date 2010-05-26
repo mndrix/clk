@@ -11,7 +11,7 @@ main = do
     tz  <- getCurrentTimeZone
 
     -- TODO replace 'after' with entries between two end points
-    let after = adjustLocalTime tz now toMidnight
+    let after = withLocalTime tz now toMidnight
     let isReportable e = (hasDuration e) && (isClockedIn e) && (time e > after)
 
     entries <- fmap (filter isReportable) mostRecentMonthEntries
@@ -45,8 +45,8 @@ showDurationAsHours :: NominalDiffTime -> String
 showDurationAsHours d = printf "%.2f hours" (x/3600)
     where x = realToFrac d :: Float
 
-adjustLocalTime :: TimeZone -> UTCTime -> (LocalTime->LocalTime) -> UTCTime
-adjustLocalTime tz start f = localTimeToUTC tz (f local)
+withLocalTime :: TimeZone -> UTCTime -> (LocalTime->LocalTime) -> UTCTime
+withLocalTime tz start f = localTimeToUTC tz (f local)
     where local = utcToLocalTime tz start
 
 toMidnight :: LocalTime -> LocalTime
