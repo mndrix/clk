@@ -24,27 +24,29 @@ within :: Period -> UTCTime -> Bool
 within p t = ( start p <= t ) && ( t <= end p )
 
 parsePeriod :: String -> IO Period
-parsePeriod "today"      = calendarPeriod day
-parsePeriod "this week"  = calendarPeriod week
-parsePeriod "this month" = calendarPeriod month
-parsePeriod "this year"  = calendarPeriod year
+parsePeriod "today"      = calendarPeriod 0 day
+parsePeriod "this week"  = calendarPeriod 0 week
+parsePeriod "this month" = calendarPeriod 0 month
+parsePeriod "this year"  = calendarPeriod 0 year
 parsePeriod "ever" = return $ Period (day 0) (day (2^16))
         where day = flip UTCTime (secondsToDiffTime 0) . ModifiedJulianDay
 parsePeriod p = error $ "Cannot parse period string '" ++ p ++ "'"
 
 -- n moves the reference point forward n units
 -- e is the Encloser representing the time unit
-calendarPeriod :: Encloser -> IO Period
-calendarPeriod e = do
+calendarPeriod :: Integer -> Encloser -> IO Period
+calendarPeriod n e = do
     zt <- getZonedTime
-    return $ enclosing e zt
+    let (_,_,duration) = e $ zonedTimeLocalDay zt
+    let reference = addZonedTime (n*duration) zt
+    return $ enclosing e reference
 
 enclosing :: Encloser -> ZonedTime -> Period
 enclosing e zt = Period utcBegin utcEnd
     where
         day      = zonedTimeLocalDay zt
         tz       = zonedTimeZone zt
-        (n, max, _) = e day
+        (n, max, duration) = e day
         start    = addDays (1  -n) day
         end      = addDays (max-n) day
         utcBegin = dayStart tz start
@@ -74,3 +76,9 @@ dayEnd   tz day = localTimeToUTC tz $ LocalTime day $ TimeOfDay 23 59 59
 
 zonedTimeLocalDay :: ZonedTime -> Day
 zonedTimeLocalDay = localDay . zonedTimeToLocalTime
+
+addZonedTime :: Integer -> ZonedTime -> ZonedTime
+addZonedTime seconds zt = utcToZonedTime tz utc
+    where tz   = zonedTimeZone zt
+          diff = fromInteger seconds
+          utc  = addUTCTime diff $ zonedTimeToUTC zt
