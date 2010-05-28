@@ -42,6 +42,8 @@ enclosing tz e ( LocalTime day _ ) = Period utcBegin utcEnd
         utcBegin = dayStart tz start
         utcEnd   = dayEnd   tz end
 
+-- The first element is the current position within the time unit.
+-- The second element is the number of positions possible.
 day :: Encloser
 day _ = ( 1, 1 )
 
