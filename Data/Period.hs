@@ -25,9 +25,13 @@ within p t = ( start p <= t ) && ( t <= end p )
 
 parsePeriod :: String -> IO Period
 parsePeriod "today"      = calendarPeriod 0 day
+parsePeriod "yesterday"  = calendarPeriod (-1) day
 parsePeriod "this week"  = calendarPeriod 0 week
+parsePeriod "last week"  = calendarPeriod (-1) week
 parsePeriod "this month" = calendarPeriod 0 month
+parsePeriod "last month" = calendarPeriod (-1) month
 parsePeriod "this year"  = calendarPeriod 0 year
+parsePeriod "last year"  = calendarPeriod (-1) year
 parsePeriod "ever" = return $ Period (day 0) (day (2^16))
         where day = flip UTCTime (secondsToDiffTime 0) . ModifiedJulianDay
 parsePeriod p = error $ "Cannot parse period string '" ++ p ++ "'"
