@@ -7,7 +7,11 @@ import Data.Time.Calendar.OrdinalDate (mondayStartWeek, toOrdinalDate)
 import System.Locale (defaultTimeLocale)
 
 data Period = Period { start :: UTCTime, end :: UTCTime }
-type Encloser = Day -> (Integer,Integer)
+
+-- The first element is the current position within the time unit.
+-- The second element is the number of positions possible.
+-- The third element is the period's approximate duration in seconds
+type Encloser = Day -> (Integer, Integer, Integer)
 
 -- handy for testing
 instance Show Period where
@@ -36,29 +40,27 @@ calendarPeriod e = do
 enclosing :: TimeZone -> Encloser -> LocalTime -> Period
 enclosing tz e ( LocalTime day _ ) = Period utcBegin utcEnd
     where
-        (n, max) = e day
+        (n, max, _) = e day
         start    = addDays (1  -n) day
         end      = addDays (max-n) day
         utcBegin = dayStart tz start
         utcEnd   = dayEnd   tz end
 
--- The first element is the current position within the time unit.
--- The second element is the number of positions possible.
 day :: Encloser
-day _ = ( 1, 1 )
+day _ = ( 1, 1, 86400 )
 
 week :: Encloser
-week day = ( dayOfWeek, 7 )
+week day = ( dayOfWeek, 7, 7*86400 )
     where dayOfWeek = fromIntegral $ snd $ mondayStartWeek day
 
 month :: Encloser
-month day = ( fromIntegral dom, dayCount )
+month day = ( fromIntegral dom, dayCount, dayCount*86400 )
     where
         (year,month,dom) = toGregorian day
         dayCount         = fromIntegral $ gregorianMonthLength year month
 
 year :: Encloser
-year day = ( fromIntegral doy, dayCount )
+year day = ( fromIntegral doy, dayCount, dayCount*86400 )
     where
         (year,doy) = toOrdinalDate day
         dayCount   = if isLeapYear year then 366 else 365
