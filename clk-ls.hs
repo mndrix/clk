@@ -13,11 +13,17 @@ options = [ Option ['p'] ["period"] (ReqArg PeriodArg "PERIOD") ""
 
 main = do
     args <- getArgs
-    let periodPhrase = case getOpt Permute options args of
-                            ([PeriodArg p], [], []) -> p
-                            otherwise               -> "today"
-    period <- parsePeriod periodPhrase
+    let ( flags, _, _ ) = getOpt Permute options args
+    period <- parsePeriod $ findPeriodPhrase flags
 
     tz     <- getCurrentTimeZone
     entries <- fmap (filter $ isWithin period) mostRecentMonthEntries
     putStrLn $ intercalate "\n" $ map (showUser tz) $ entries
+
+findPeriodPhrase :: [Flag] -> String
+findPeriodPhrase flags =
+    case find isPeriodFlag flags of
+        Just (PeriodArg p) -> p
+        Nothing            -> "today"
+    where isPeriodFlag (PeriodArg _) = True
+          isPeriodFlag _              = False
