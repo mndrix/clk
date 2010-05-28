@@ -42,9 +42,6 @@ isClockedIn = not . isClockedOut
 hasDuration :: Entry -> Bool
 hasDuration = isJust . dur
 
-isWithin :: Period -> Entry -> Bool
-isWithin period = within period . time
-
 type Client = String
 client :: Entry -> Client
 client e = maybe "none" id $ listToMaybe $ filter isClientTag $ tags e

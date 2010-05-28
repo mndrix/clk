@@ -2,6 +2,7 @@ module App.Clk.Entry where
 
 import App.Clk.Util
 import Data.List
+import Data.Period
 import Data.Time.Clock
 import Data.Time.LocalTime
 
@@ -66,3 +67,6 @@ monthFileEntries monthFile = do
                     []  -> return []
                     [x] -> return [ setDurationNow x now ]
                     xs  -> return $ (tween setDuration xs) ++ [ setDurationNow (last xs) now ]
+
+isWithin :: Period -> Entry -> Bool
+isWithin period = within period . time
