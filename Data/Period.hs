@@ -32,14 +32,18 @@ parsePeriod "ever" = return $ Period (day 0) (day (2^16))
         where day = flip UTCTime (secondsToDiffTime 0) . ModifiedJulianDay
 parsePeriod p = error $ "Cannot parse period string '" ++ p ++ "'"
 
+-- n moves the reference point forward n units
+-- e is the Encloser representing the time unit
+calendarPeriod :: Encloser -> IO Period
 calendarPeriod e = do
-    utc   <- getCurrentTime
-    tz    <- getTimeZone utc
-    return $ enclosing tz e $ utcToLocalTime tz utc
+    zt <- getZonedTime
+    return $ enclosing e zt
 
-enclosing :: TimeZone -> Encloser -> LocalTime -> Period
-enclosing tz e ( LocalTime day _ ) = Period utcBegin utcEnd
+enclosing :: Encloser -> ZonedTime -> Period
+enclosing e zt = Period utcBegin utcEnd
     where
+        day      = zonedTimeLocalDay zt
+        tz       = zonedTimeZone zt
         (n, max, _) = e day
         start    = addDays (1  -n) day
         end      = addDays (max-n) day
@@ -67,3 +71,6 @@ year day = ( fromIntegral doy, dayCount, dayCount*86400 )
 
 dayStart tz day = localTimeToUTC tz $ LocalTime day $ TimeOfDay 0 0 0
 dayEnd   tz day = localTimeToUTC tz $ LocalTime day $ TimeOfDay 23 59 59
+
+zonedTimeLocalDay :: ZonedTime -> Day
+zonedTimeLocalDay = localDay . zonedTimeToLocalTime
