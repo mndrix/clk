@@ -1,5 +1,9 @@
 #!/usr/bin/env swipl -q -t halt -g go -f
-go :- forall( get_csv(Csv), write_csv(Csv) ).
+go :-
+    findall( Csv, get_csv(Csv), Csvs),
+    msort( Csvs, SortedCsvs ),
+    consolidate( SortedCsvs, ConsolidatedCsvs ),
+    forall( member(Csv, ConsolidatedCsvs), write_csv(Csv) ).
 
 % reads a line from stdin providing choice points for each line
 read_line(Line) :-
@@ -21,7 +25,9 @@ entry_line(Line, [Time,Duration,Tags,Msg]) :-
     concat_atom(UnsortedTags,',',RawTags),
     sort(UnsortedTags,Tags).
 csv_line([P,C,S,T,D,Days], Line) :-
-    concat_atom([P,C,S,T,D|Days],',',Line).
+    maplist( seconds_hours, Days, HourDays ),
+    concat_atom([P,C,S,T,D|HourDays],',',Line).
+seconds_hours( Seconds, Hours ) :- Hours is Seconds/3600.
 write_csv(Csv) :-
     csv_line(Csv, CsvLine),
     format('~w~n', [CsvLine]).
@@ -98,7 +104,7 @@ c( Entry, Csv ) :-
     detail(Csv,Msg).
 c( Entry, Csv ) :-
     overhead(Csv),
-    task(Csv, ''),
+    task(Csv, 'General'),
     message( Entry, Msg ),
     detail( Csv, Msg ).
 
@@ -120,7 +126,7 @@ project(Entry, Csv) :-
     full_project(Csv,'TaxSys','All','').
 project(Entry, Csv) :-
     has_tag(Entry, 'fmac-debt'),
-    full_project(Csv,'AgencyAuction','Freddie Mac','On Demand Programming').
+    full_project(Csv,'Freddie Mac','Freddie Mac','On Demand Programming').
 
 % Helper predicates
 % Accessors for Entry
@@ -142,6 +148,11 @@ wednesday([0,0,0,X,0,0,0], X).
 thursday( [0,0,0,0,X,0,0], X).
 friday(   [0,0,0,0,0,X,0], X).
 saturday( [0,0,0,0,0,0,X], X).
+
+add_csv( [P,C,S,T,D,Days0], [P,C,S,T,D,Days1], [P,C,S,T,D,Days2] ) :-
+    maplist( plus_float, Days0, Days1, Days2 ).
+plus_float( X, Y, Z ) :- Z is X + Y.
+
 % Various
 has_tag(Entry, Tag) :-
     tags(Entry, Tags),
@@ -191,3 +202,11 @@ dow_predicate(DateTime, Pred) :-
     day_of_week(DateTime, DayOfWeek),
     Days = [sunday, monday, tuesday, wednesday, thursday, friday, saturday],
     nth0( DayOfWeek, Days, Pred ).
+
+consolidate( [], [] ).
+consolidate( [X], [X] ).
+consolidate( [X,Y|Xs], Rest ) :-
+    add_csv(X,Y,Z),
+    consolidate([Z|Xs], Rest).
+consolidate( [X,Y|Xs], [X|Rest] ) :-
+    consolidate([Y|Xs], Rest).
