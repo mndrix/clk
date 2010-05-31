@@ -1,20 +1,20 @@
 #!/usr/bin/env swipl -q -t halt -g go -f
-go :-
-    repeat,
-    read_line(Line),
-    entry_line(Line, Entry),
-    csv(Entry,Csv),
-    csv_line(Csv, CsvLine),
-    format('~w~n', [CsvLine]),
-    fail.
+go :- forall( get_csv(Csv), write_csv(Csv) ).
 
+% reads a line from stdin providing choice points for each line
 read_line(Line) :-
+    repeat,
     prompt(_,''),
     read_line_to_codes(user_input,Codes),
-    codes_to_line(Codes, Line).
-codes_to_line( end_of_file, _ ) :- halt.
-codes_to_line( Codes, Line ) :- atom_codes( Line, Codes ).
+    (
+        Codes = end_of_file, !, fail;
+        atom_codes( Line, Codes )
+    ).
 
+get_csv(Csv) :-
+    read_line(Line),
+    entry_line(Line, Entry),
+    csv(Entry,Csv).
 entry_line(Line, [Time,Duration,Tags,Msg]) :-
     concat_atom([_,Time,RawDuration,RawTags,Msg],'\t',Line),
     atom_duration(RawDuration,Duration),
@@ -22,6 +22,9 @@ entry_line(Line, [Time,Duration,Tags,Msg]) :-
     sort(UnsortedTags,Tags).
 csv_line([P,C,S,T,D,Days], Line) :-
     concat_atom([P,C,S,T,D|Days],',',Line).
+write_csv(Csv) :-
+    csv_line(Csv, CsvLine),
+    format('~w~n', [CsvLine]).
 
 % atom_duration(+Atom,?Duration)
 % could probably be implement with append/3 to make it reversible
