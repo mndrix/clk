@@ -1,3 +1,5 @@
+module App.Clk.Command.Report (main) where
+
 import App.Clk.Entry
 import Data.List
 import Data.Maybe
@@ -11,8 +13,7 @@ import Text.Printf
 
 data Flag = PeriodArg String -- -p or --period
 
-main = do
-    args <- getArgs
+main args = do
     let periodPhrase = case getOpt Permute options args of
                             ([PeriodArg p], [], []) -> p
                             otherwise               -> "today"

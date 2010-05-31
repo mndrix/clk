@@ -1,3 +1,5 @@
+module App.Clk.Command.Ls (main) where
+
 import App.Clk.Entry
 import App.Clk.Util
 import Data.List
@@ -14,8 +16,7 @@ options = [ Option ['p'] ["period"] (ReqArg PeriodArg "PERIOD") ""
           , Option [   ] ["format"] (ReqArg FormatArg "FORMAT") ""
           ]
 
-main = do
-    args <- getArgs
+main args = do
     let ( flags, _, _ ) = getOpt Permute options args
     period <- parsePeriod $ findPeriodPhrase flags
 

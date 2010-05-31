@@ -1,6 +1,4 @@
--- This is intended to a very quick script being the simplest thing
--- that could possibly work
-
+module App.Clk.Command.In (main) where
 import App.Clk.Entry
 import App.Clk.Util
 import Data.List
@@ -9,11 +7,11 @@ import Data.Time.Clock
 import Data.Time.Calendar
 import System.Environment
 
-main = do
+main args = do
     -- display an entry line
     now <- getCurrentTime
     tz  <- getCurrentTimeZone
-    (tags,msg) <- fmap parseArgs getArgs
+    let (tags,msg) = parseArgs args
     let entry = Entry "michael@ndrix.org" now tags msg Nothing
     putStrLn $ showUser tz entry
 
