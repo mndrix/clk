@@ -3,9 +3,9 @@ go :-
     repeat,
     read_line(Line),
     entry_line(Line, Entry),
-    csv(Entry,CsvParts),
-    concat_atom(CsvParts,',',Csv),
-    format('~w~n', [Csv]),
+    csv(Entry,Csv),
+    csv_line(Csv, CsvLine),
+    format('~w~n', [CsvLine]),
     fail.
 
 read_line(Line) :-
@@ -20,6 +20,8 @@ entry_line(Line, [Time,Duration,Tags,Msg]) :-
     atom_duration(RawDuration,Duration),
     concat_atom(UnsortedTags,',',RawTags),
     sort(UnsortedTags,Tags).
+csv_line([P,C,S,T,D,Days], Line) :-
+    concat_atom([P,C,S,T,D|Days],',',Line).
 
 % atom_duration(+Atom,?Duration)
 % could probably be implement with append/3 to make it reversible
@@ -37,7 +39,14 @@ atom_duration(Atom, Duration) :-
 % - Sunday-Saturday hours summary
 csv( Entry, _ ) :- message(Entry,'out'), !, fail.
 csv( Entry, _ ) :- tags(Entry, Tags), \+ member('gsg', Tags), !, fail.
-csv( Entry, Csv ) :- c(Entry,Csv), !.
+csv( Entry, Csv ) :-
+    c(Entry,Csv),
+    !,
+    timestamp(Entry, DateTime),
+    dow_predicate( DateTime, DoW ),
+    duration(Entry, Duration),
+    days(Csv, Days),
+    call( DoW, Days, Duration ).
 c( Entry, Csv ) :-
     is_conference_call(Entry),
     task(Csv, 'Meetings'),
@@ -112,15 +121,24 @@ project(Entry, Csv) :-
 
 % Helper predicates
 % Accessors for Entry
-timestamp([T,_,_,_], T).
+timestamp([T,_,_,_], DateTime) :- parse_iso8601(T,DateTime).
 duration([_,D,_,_], D).
 tags([_,_,T,_], T).
 message([_,_,_,M], M).
 % Accessors for Csv
-task([_,_,_,Task,_],Task).
-detail([_,_,_,_,Detail],Detail).
-full_project([Project,Client,Subproject,_,_], Project, Client, Subproject).
-overhead(['Overhead','','',_,_]).
+task([_,_,_,Task,_,_],Task).
+detail([_,_,_,_,Detail,_],Detail).
+full_project([Project,Client,Subproject,_,_,_], Project, Client, Subproject).
+overhead(['Overhead','','',_,_,_]).
+days([_,_,_,_,_,Days], Days).
+% Accessors for Days
+sunday(   [X,0,0,0,0,0,0], X).
+monday(   [0,X,0,0,0,0,0], X).
+tuesday(  [0,0,X,0,0,0,0], X).
+wednesday([0,0,0,X,0,0,0], X).
+thursday( [0,0,0,0,X,0,0], X).
+friday(   [0,0,0,0,0,X,0], X).
+saturday( [0,0,0,0,0,0,X], X).
 % Various
 has_tag(Entry, Tag) :-
     tags(Entry, Tags),
@@ -147,3 +165,26 @@ is_conference_call(Entry) :-
     member(Phrase, ['calls', 'call']),
     member(Phrase, Words),
     !.
+
+parse_iso8601(Iso, date(Y,M,D,H,Mn,S,0,-,-) ) :-
+    date_atom(Iso, Date),
+    concat_atom([YA,MA,DA], '-', Date),
+    atom_number(YA, Y),
+    atom_number(MA, M),
+    atom_number(DA, D),
+    time_atom(Iso, Time),
+    concat_atom([HA,MnA,SA], ':', Time),
+    atom_number(HA,  H),
+    atom_number(MnA, Mn),
+    atom_number(SA,  S).
+date_atom(Iso, Date) :-
+    concat_atom( [Date, _], 'T', Iso ).
+time_atom(Iso, Time) :-
+    concat_atom( [_, Time], 'T', Iso ).
+day_of_week(DateTime, DayOfWeek) :-
+    format_time(atom(X), '%w', DateTime),
+    atom_number( X, DayOfWeek ).
+dow_predicate(DateTime, Pred) :-
+    day_of_week(DateTime, DayOfWeek),
+    Days = [sunday, monday, tuesday, wednesday, thursday, friday, saturday],
+    nth0( DayOfWeek, Days, Pred ).
