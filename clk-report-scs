@@ -1,0 +1,22 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use List::AllUtils qw( none sum );
+
+my %hours;
+while (<>) {
+    chomp;
+    my (undef, $time, $duration, $tags, $msg) = split /\t/;
+    next if $msg eq 'out';
+    my @tags = split /,/, $tags;
+    next if none { $_ eq 'scs' } @tags;
+
+    my $day = substr $time, 0, 10;
+    $duration =~ s/s$//;
+    $hours{$day} += $duration/3600;
+}
+
+for my $date ( sort keys %hours ) {
+    printf "$date %.2f\n", $hours{$date};
+}
+printf "    Total: %.2f\n", sum values %hours;
