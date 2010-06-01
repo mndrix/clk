@@ -110,23 +110,15 @@ c( Entry, Csv ) :-
 
 % determine the 3 project CSV columns (Project, Client, Subproject)
 project(Entry, Csv) :-
-    has_tag(Entry, 'sso'),
-    full_project(Csv,'Zions','Zions Bank','SSO').
-project(Entry, Csv) :-
-    has_tag(Entry, 'zions'),
-    full_project(Csv,'Zions','Zions Bank','Auctions').
-project(Entry, Csv) :-
-    has_tag(Entry, 'gitc'),
-    full_project(Csv,'Internal Projects','','').
-project(Entry, Csv) :-
-    has_tag(Entry, 'zions-new-account'),
-    full_project(Csv,'Zions','Zions Bank','New Accounts').
-project(Entry, Csv) :-
-    has_tag(Entry, 'taxsys'),
-    full_project(Csv,'TaxSys','All','').
-project(Entry, Csv) :-
-    has_tag(Entry, 'fmac-debt'),
-    full_project(Csv,'Freddie Mac','Freddie Mac','On Demand Programming').
+    tag_project( Tag, Project, Client, Subproject ),
+    has_tag(Entry, Tag),
+    full_project(Csv,Project,Client,Subproject).
+tag_project(sso,     'Zions',             'Zions Bank', 'SSO'      ).
+tag_project(zions,   'Zions',             'Zions Bank', 'Auctions' ).
+tag_project(gitc,    'Internal Projects', '',           ''         ).
+tag_project(taxsys,  'TaxSys',            'All',        ''         ).
+tag_project('zions-new-account','Zions','Zions Bank','New Accounts').
+tag_project('fmac-debt', 'Freddie Mac','Freddie Mac','On Demand Programming').
 
 % Helper predicates
 % Accessors for Entry
