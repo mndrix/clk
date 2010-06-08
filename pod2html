@@ -1,6 +1,0 @@
-#!/usr/bin/perl
-use strict;
-use warnings;
-use Pod::Simple::HTML;
-
-Pod::Simple::HTML->parse_from_file(@ARGV);

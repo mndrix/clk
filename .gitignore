@@ -1,3 +1,4 @@
-Session.vim
-docs/
-ktrace.out
+*.hi
+*.o
+*.exe
+*.swp

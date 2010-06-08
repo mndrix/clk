@@ -1,0 +1,204 @@
+#!/usr/bin/env swipl -q -t halt -g go -f
+go :-
+    findall( Csv, get_csv(Csv), Csvs),
+    msort( Csvs, SortedCsvs ),
+    consolidate( SortedCsvs, ConsolidatedCsvs ),
+    forall( member(Csv, ConsolidatedCsvs), write_csv(Csv) ).
+
+% reads a line from stdin providing choice points for each line
+read_line(Line) :-
+    repeat,
+    prompt(_,''),
+    read_line_to_codes(user_input,Codes),
+    (
+        Codes = end_of_file, !, fail;
+        atom_codes( Line, Codes )
+    ).
+
+get_csv(Csv) :-
+    read_line(Line),
+    entry_line(Line, Entry),
+    csv(Entry,Csv).
+entry_line(Line, [Time,Duration,Tags,Msg]) :-
+    concat_atom([_,Time,RawDuration,RawTags,Msg],'\t',Line),
+    atom_duration(RawDuration,Duration),
+    concat_atom(UnsortedTags,',',RawTags),
+    sort(UnsortedTags,Tags).
+csv_line([P,C,S,T,D,Days], Line) :-
+    maplist( seconds_hours, Days, HourDays ),
+    concat_atom([P,C,S,T,D|HourDays],',',Line).
+seconds_hours( Seconds, Hours ) :- Hours is Seconds/3600.
+write_csv(Csv) :-
+    csv_line(Csv, CsvLine),
+    format('~w~n', [CsvLine]).
+
+% atom_duration(+Atom,?Duration)
+% could probably be implement with append/3 to make it reversible
+atom_duration(Atom, Duration) :-
+    concat_atom([D,'s'], Atom),
+    atom_number(D,Duration).
+
+% this isn't working, but it hints at the direction
+% The columns in the CSV list are:
+% - Project (Overhead, TaxSys, Zions, etc)
+% - Client ("",All,Zions Bank, etc)
+% - Subproject (SSO, New Account, Auctions, etc)
+% - Task (General, Business Development, Code Review, Programming, etc)
+% - Detail (changeset ID, general message, etc)
+% - Sunday-Saturday hours summary
+csv( Entry, _ ) :- message(Entry,'out'), !, fail.
+csv( Entry, _ ) :- tags(Entry, Tags), \+ member('gsg', Tags), !, fail.
+csv( Entry, Csv ) :-
+    c(Entry,Csv),
+    !,
+    timestamp(Entry, DateTime),
+    dow_predicate( DateTime, DoW ),
+    duration(Entry, Duration),
+    days(Csv, Days),
+    call( DoW, Days, Duration ).
+c( Entry, Csv ) :-
+    is_conference_call(Entry),
+    task(Csv, 'Meetings'),
+    message(Entry, Msg),
+    detail(Csv,Msg),
+    project(Entry, Csv).
+c( Entry, Csv ) :-
+    has_tag( Entry, 'review' ),
+    task(Csv, 'Code Review'),
+    project(Entry, Csv),
+    is_selenium(Entry),
+    changeset(Entry, Changeset),
+    concat_atom(['Selenium: ', Changeset], Msg),
+    detail(Csv, Msg).
+c( Entry, Csv ) :-
+    has_tag( Entry, 'review' ),
+    task(Csv, 'Code Review'),
+    message(Entry, Msg),
+    detail(Csv,Msg),
+    project(Entry, Csv).
+c( Entry, Csv ) :-
+    has_tag( Entry, 'gitc' ),
+    message( Entry, 'user support' ),
+    full_project( Csv, 'Internal Projects','','' ),
+    task(Csv, 'Production Support'),
+    detail(Csv, 'gitc user support' ).
+c( Entry, Csv ) :-
+    message(Entry, 'email'),
+    detail(Csv, 'reading and responding to email'),
+    task(Csv,'General'),
+    overhead(Csv).
+c( Entry, Csv ) :-
+    message(Entry, 'im'),
+    detail(Csv, 'catching up on tech team chat channel'),
+    task(Csv,'General'),
+    overhead(Csv).
+c( Entry, Csv ) :-
+    message(Entry, 'tech team meeting'),
+    detail(Csv, 'tech team'),
+    task(Csv,'Meetings'),
+    overhead(Csv).
+c( Entry, Csv ) :-
+    project(Entry, Csv),
+    task(Csv, 'Programming'),
+    message(Entry,Msg),
+    detail(Csv,Msg).
+c( Entry, Csv ) :-
+    overhead(Csv),
+    task(Csv, 'General'),
+    message( Entry, Msg ),
+    detail( Csv, Msg ).
+
+% determine the 3 project CSV columns (Project, Client, Subproject)
+project(Entry, Csv) :-
+    tag_project( Tag, Project, Client, Subproject ),
+    has_tag(Entry, Tag),
+    full_project(Csv,Project,Client,Subproject).
+tag_project(sso,     'Zions',             'Zions Bank', 'SSO'      ).
+tag_project(zions,   'Zions',             'Zions Bank', 'Auctions' ).
+tag_project(gitc,    'Internal Projects', '',           ''         ).
+tag_project(taxsys,  'TaxSys',            'All',        ''         ).
+tag_project('zions-new-account','Zions','Zions Bank','New Accounts').
+tag_project('fmac-debt', 'Freddie Mac','Freddie Mac','On Demand Programming').
+
+% Helper predicates
+% Accessors for Entry
+timestamp([T,_,_,_], DateTime) :- parse_iso8601(T,DateTime).
+duration([_,D,_,_], D).
+tags([_,_,T,_], T).
+message([_,_,_,M], M).
+% Accessors for Csv
+task([_,_,_,Task,_,_],Task).
+detail([_,_,_,_,Detail,_],Detail).
+full_project([Project,Client,Subproject,_,_,_], Project, Client, Subproject).
+overhead(['Overhead','','',_,_,_]).
+days([_,_,_,_,_,Days], Days).
+% Accessors for Days
+sunday(   [X,0,0,0,0,0,0], X).
+monday(   [0,X,0,0,0,0,0], X).
+tuesday(  [0,0,X,0,0,0,0], X).
+wednesday([0,0,0,X,0,0,0], X).
+thursday( [0,0,0,0,X,0,0], X).
+friday(   [0,0,0,0,0,X,0], X).
+saturday( [0,0,0,0,0,0,X], X).
+
+add_csv( [P,C,S,T,D,Days0], [P,C,S,T,D,Days1], [P,C,S,T,D,Days2] ) :-
+    maplist( plus_float, Days0, Days1, Days2 ).
+plus_float( X, Y, Z ) :- Z is X + Y.
+
+% Various
+has_tag(Entry, Tag) :-
+    tags(Entry, Tags),
+    member(Tag, Tags).
+is_selenium(Entry) :-
+    message(Entry, Msg),
+    sub_atom(Msg,_,_,_,'selenium'),
+    !.
+is_sso(Entry) :- has_tag(Entry,'sso').
+changeset(Entry, Changeset) :-
+    message(Entry, Msg),
+    concat_atom(Words, ' ', Msg),
+    member( Changeset, Words ),
+    is_changeset(Changeset),
+    !.
+is_changeset(Changeset) :-
+    sub_atom(Changeset, 0, 1, _, 'e'),
+    member(Digit,[0,1,2,3,4,5,6,7,8,9]),
+    sub_atom(Changeset,1,1,_,Digit),
+    !.
+is_conference_call(Entry) :-
+    message(Entry,Msg),
+    concat_atom(Words, ' ', Msg),
+    member(Phrase, ['calls', 'call']),
+    member(Phrase, Words),
+    !.
+
+parse_iso8601(Iso, date(Y,M,D,H,Mn,S,0,-,-) ) :-
+    date_atom(Iso, Date),
+    concat_atom([YA,MA,DA], '-', Date),
+    atom_number(YA, Y),
+    atom_number(MA, M),
+    atom_number(DA, D),
+    time_atom(Iso, Time),
+    concat_atom([HA,MnA,SA], ':', Time),
+    atom_number(HA,  H),
+    atom_number(MnA, Mn),
+    atom_number(SA,  S).
+date_atom(Iso, Date) :-
+    concat_atom( [Date, _], 'T', Iso ).
+time_atom(Iso, Time) :-
+    concat_atom( [_, Time], 'T', Iso ).
+day_of_week(DateTime, DayOfWeek) :-
+    format_time(atom(X), '%w', DateTime),
+    atom_number( X, DayOfWeek ).
+dow_predicate(DateTime, Pred) :-
+    day_of_week(DateTime, DayOfWeek),
+    Days = [sunday, monday, tuesday, wednesday, thursday, friday, saturday],
+    nth0( DayOfWeek, Days, Pred ).
+
+consolidate( [], [] ).
+consolidate( [X], [X] ).
+consolidate( [X,Y|Xs], Rest ) :-
+    add_csv(X,Y,Z),
+    consolidate([Z|Xs], Rest).
+consolidate( [X,Y|Xs], [X|Rest] ) :-
+    consolidate([Y|Xs], Rest).
