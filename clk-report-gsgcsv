@@ -156,7 +156,7 @@ is_selenium(Entry) :-
 is_sso(Entry) :- has_tag(Entry,'sso').
 changeset(Entry, Changeset) :-
     message(Entry, Msg),
-    concat_atom(Words, ' ', Msg),
+    ( concat_atom(Words, ' ', Msg); concat_atom(Words, '#', Msg) ),
     member( Changeset, Words ),
     is_changeset(Changeset),
     !.
