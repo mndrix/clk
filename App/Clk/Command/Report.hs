@@ -45,11 +45,20 @@ hasDuration = isJust . dur
 
 type Client = String
 client :: Entry -> Client
-client e = maybe "none" id $ listToMaybe $ filter isClientTag $ tags e
+client = fromMaybe "none" . inferClient . tags
+
+inferClient :: Tags -> Maybe Client
+inferClient tags =
+    case filter isClientTag tags of
+        [ ] -> Nothing
+        [t] -> Just t
+        ts  -> if   any (=="cokem") ts
+               then Just "cokem"
+               else listToMaybe ts
 
 type Tag = String
 isClientTag :: Tag -> Bool
-isClientTag t = any (t==) ["gsg","jjgames","ndrix","scs","vgpc"]
+isClientTag t = any (t==) ["cokem","gsg","jjgames","ndrix","scs","vgpc"]
 
 showDurationAsHours :: NominalDiffTime -> String
 showDurationAsHours d = printf "%.2f hours" (x/3600)
