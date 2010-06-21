@@ -38,7 +38,6 @@ atom_duration(Atom, Duration) :-
     concat_atom([D,'s'], Atom),
     atom_number(D,Duration).
 
-% this isn't working, but it hints at the direction
 % The columns in the CSV list are:
 % - Project (Overhead, TaxSys, Zions, etc)
 % - Client ("",All,Zions Bank, etc)
@@ -79,9 +78,16 @@ c( Entry, Csv ) :-
 c( Entry, Csv ) :-
     has_tag( Entry, 'gitc' ),
     message( Entry, 'user support' ),
-    full_project( Csv, 'Internal Projects','','' ),
+    project(Entry, Csv) ?
     task(Csv, 'Production Support'),
-    detail(Csv, 'gitc user support' ).
+    detail(Csv, 'gitc: user support' ).
+c( Entry, Csv ) :-
+    has_tag( Entry, 'gitc' ),
+    project(Entry, Csv),
+    task(Csv, 'Programming'),
+    message(Entry,Msg),
+    concat_atom(['gitc', Msg], ': ', FullMsg),
+    detail(Csv,FullMsg).
 c( Entry, Csv ) :-
     message(Entry, 'email'),
     detail(Csv, 'reading and responding to email'),
