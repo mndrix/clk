@@ -7,6 +7,7 @@ import Data.Time.Calendar.OrdinalDate (mondayStartWeek, toOrdinalDate)
 import System.Locale (defaultTimeLocale)
 
 data Period = Period { start :: UTCTime, end :: UTCTime }
+    deriving (Eq)
 
 -- The first element is the current position within the time unit.
 -- The second element is the number of positions possible.
@@ -22,6 +23,10 @@ instance Show Period where
 -- Returns true if the time falls between the period's end points, inclusive
 within :: Period -> UTCTime -> Bool
 within p t = ( start p <= t ) && ( t <= end p )
+
+-- Returns true if the two periods overlap each other
+overlaps :: Period -> Period -> Bool
+overlaps a b = ( end a >= start b ) && ( start a <= end b )
 
 parsePeriod :: String -> IO Period
 parsePeriod "today"      = calendarPeriod 0 day

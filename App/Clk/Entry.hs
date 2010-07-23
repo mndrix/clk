@@ -1,5 +1,6 @@
 module App.Clk.Entry where
 
+import App.Clk.MonthFile
 import App.Clk.Util
 import Data.List
 import Data.Period
@@ -54,19 +55,18 @@ setDurationNow e0 t = e0{ dur = Just diffSeconds }
 mostRecentMonthEntries :: IO [Entry]
 mostRecentMonthEntries = do
     monthFile <- mostRecentMonthFile
-    monthFileEntries monthFile
+    case monthFile of
+        Nothing -> return []
+        Just mf -> monthFileEntries mf
 
-monthFileEntries :: Maybe String -> IO [Entry]
-monthFileEntries monthFile = do
+monthFileEntries :: MonthFile -> IO [Entry]
+monthFileEntries p = do
         now <- getCurrentTime
-        case monthFile of
-            Nothing -> return []
-            Just p  -> do
-                content <- readFile p
-                case map read (lines content) of
-                    []  -> return []
-                    [x] -> return [ setDurationNow x now ]
-                    xs  -> return $ (tween setDuration xs) ++ [ setDurationNow (last xs) now ]
+        content <- readFile $ filePath p
+        case map read (lines content) of
+            []  -> return []
+            [x] -> return [ setDurationNow x now ]
+            xs  -> return $ (tween setDuration xs) ++ [ setDurationNow (last xs) now ]
 
 isWithin :: Period -> Entry -> Bool
 isWithin period = within period . time
