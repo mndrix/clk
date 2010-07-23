@@ -34,12 +34,16 @@ strptime = readTime defaultTimeLocale
 isMonthFile :: FilePath -> Bool
 isMonthFile p = p =~ "^[0-9]{4}-[0-9]{2}.txt$"
 
+allMonthFiles :: IO [MonthFile]
+allMonthFiles = do
+    clkDir   <- getClkDir
+    let lineDir = clkDir </> "timeline"
+    paths <- fmap (map (lineDir</>)) $ getDirectoryContents lineDir
+    return $ mapMaybe maybeMonthFile $ map mkAbsolutePath paths
+
 mostRecentMonthFile :: IO (Maybe MonthFile)
 mostRecentMonthFile = do
-        clkDir   <- getClkDir
-        let lineDir = clkDir </> "timeline"
-        paths <- fmap (map (lineDir</>)) $ getDirectoryContents lineDir
-        let monthFiles = mapMaybe maybeMonthFile $ map mkAbsolutePath paths
+        monthFiles <- allMonthFiles
         case monthFiles of
             [] -> return Nothing
             fs -> return $ Just $ maximum fs
