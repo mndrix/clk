@@ -7,6 +7,7 @@ import Data.Time.Calendar.OrdinalDate (mondayStartWeek, toOrdinalDate)
 import System.Locale (defaultTimeLocale)
 
 data Period = Period { start :: UTCTime, end :: UTCTime }
+    deriving (Eq)
 
 -- The first element is the current position within the time unit.
 -- The second element is the number of positions possible.
