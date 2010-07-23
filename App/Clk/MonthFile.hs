@@ -3,13 +3,20 @@ module App.Clk.MonthFile (
     , maybeMonthFile
 ) where
 
-import Data.Period (Period(Period))
+import Data.Function (on)
+import Data.Period (Period(Period),start)
 import Data.Time.Calendar
 import Data.Time.Clock
 import System.AbsolutePath
 import Text.Regex.Posix
 
-data MonthFile = MonthFile Period AbsolutePath
+data MonthFile = MonthFile {
+        period :: Period,
+        path   :: AbsolutePath
+    } deriving (Show, Eq)
+
+instance Ord MonthFile where
+    compare = compare `on` (start.period)
 
 maybeMonthFile :: AbsolutePath -> Maybe MonthFile
 maybeMonthFile path
