@@ -24,6 +24,10 @@ instance Show Period where
 within :: Period -> UTCTime -> Bool
 within p t = ( start p <= t ) && ( t <= end p )
 
+-- Returns true if the two periods overlap each other
+overlaps :: Period -> Period -> Bool
+overlaps a b = ( end a >= start b ) && ( start a <= end b )
+
 parsePeriod :: String -> IO Period
 parsePeriod "today"      = calendarPeriod 0 day
 parsePeriod "yesterday"  = calendarPeriod (-1) day
