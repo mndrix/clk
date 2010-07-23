@@ -1,8 +1,11 @@
 module App.Clk.Util where
 
+import App.Clk.MonthFile
+import System.AbsolutePath
 import System.Directory
 import System.Locale
 import System.Environment
+import System.FilePath
 import Data.List
 import Data.Maybe
 import Data.Time
@@ -31,14 +34,15 @@ strptime = readTime defaultTimeLocale
 isMonthFile :: FilePath -> Bool
 isMonthFile p = p =~ "^[0-9]{4}-[0-9]{2}.txt$"
 
-mostRecentMonthFile :: IO (Maybe String)
+mostRecentMonthFile :: IO (Maybe MonthFile)
 mostRecentMonthFile = do
         clkDir   <- getClkDir
-        rawPaths <- getDirectoryContents (clkDir++"timeline")
-        let relPaths = reverse $ sort rawPaths
-        let relMonthPaths = filter isMonthFile relPaths
-        let absPaths = map (\x -> clkDir++"timeline/"++x) relMonthPaths
-        return $ listToMaybe absPaths
+        let lineDir = clkDir </> "timeline"
+        paths <- fmap (map (lineDir</>)) $ getDirectoryContents lineDir
+        let monthFiles = mapMaybe maybeMonthFile $ map mkAbsolutePath paths
+        case monthFiles of
+            [] -> return Nothing
+            fs -> return $ Just $ maximum fs
 
 tween :: ( a -> a -> b ) -> [a] -> [b]
 tween _ [ ] = []

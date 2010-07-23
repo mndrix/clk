@@ -1,5 +1,6 @@
 module App.Clk.Entry where
 
+import App.Clk.MonthFile
 import App.Clk.Util
 import Data.List
 import Data.Period
@@ -56,13 +57,13 @@ mostRecentMonthEntries = do
     monthFile <- mostRecentMonthFile
     monthFileEntries monthFile
 
-monthFileEntries :: Maybe String -> IO [Entry]
+monthFileEntries :: Maybe MonthFile -> IO [Entry]
 monthFileEntries monthFile = do
         now <- getCurrentTime
         case monthFile of
             Nothing -> return []
             Just p  -> do
-                content <- readFile p
+                content <- readFile $ filePath p
                 case map read (lines content) of
                     []  -> return []
                     [x] -> return [ setDurationNow x now ]
