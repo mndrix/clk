@@ -2,6 +2,7 @@ module App.Clk.MonthFile (
       MonthFile
     , maybeMonthFile
     , filePath
+    , period
 ) where
 
 import Data.Function (on)

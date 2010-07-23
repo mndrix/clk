@@ -1,6 +1,7 @@
 module App.Clk.Command.Ls (main) where
 
 import App.Clk.Entry
+import App.Clk.MonthFile
 import App.Clk.Util
 import Data.List
 import Data.Maybe
@@ -23,7 +24,7 @@ main args = do
     let formatter = findFormatter flags
 
     tz     <- getCurrentTimeZone
-    entries <- fmap (filter $ isWithin period) mostRecentMonthEntries
+    entries <- entriesWithin period
     putStrLn $ intercalate "\n" $ map (formatter tz) $ entries
 
 findPeriodPhrase :: [Flag] -> String
@@ -50,3 +51,10 @@ showFull tz (Entry name time tags msg dur) = intercalate "\t" parts
           userTime = strftime "%FT%T%Q" $ utcToLocalTime tz time
           tagsS    = intercalate "," tags
           durS     = maybe "" show dur
+
+entriesWithin :: Period -> IO [Entry]
+entriesWithin p = do
+    monthFiles <- fmap (filter isKeeper) allMonthFiles
+    entries <- sequence $ map monthFileEntries monthFiles
+    return $ filter (isWithin p) $ concat entries
+    where isKeeper = overlaps p . period
