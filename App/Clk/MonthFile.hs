@@ -1,13 +1,15 @@
 module App.Clk.MonthFile (
       MonthFile
     , maybeMonthFile
+    , filePath
 ) where
 
 import Data.Function (on)
 import Data.Period (Period(Period),start)
 import Data.Time.Calendar
 import Data.Time.Clock
-import System.AbsolutePath
+import System.AbsolutePath (AbsolutePath, takeBaseName, takeExtension)
+import qualified System.AbsolutePath as AP
 import Text.Regex.Posix
 
 data MonthFile = MonthFile {
@@ -38,6 +40,8 @@ isMonthFile path = name && extension
 isYYYYMM :: String -> Bool
 isYYYYMM x = x =~ "^[0-9]{4}-[0-9]{2}$"
 
+filePath :: MonthFile -> FilePath
+filePath = AP.path . path
 
 
 -- a convenient type when working with MonthFile values

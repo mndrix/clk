@@ -3,6 +3,7 @@ module System.AbsolutePath (
     , mkAbsolutePath
     , takeBaseName
     , takeExtension
+    , path
 ) where
 import qualified System.FilePath as FP
 
