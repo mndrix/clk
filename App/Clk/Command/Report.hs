@@ -20,7 +20,7 @@ main args = do
     period <- parsePeriod periodPhrase
 
     let p e = all ($e) [ hasDuration, isClockedIn, isWithin period ]
-    entries <- fmap (filter p) mostRecentMonthEntries
+    entries <- fmap (filter p) $ entriesWithin period
 
 --  putStrLn $ intercalate "\n" $ map show entries
     let f = \s e -> Map.insertWith (+) (client e) (maybe 0 id $ dur e) s
