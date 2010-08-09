@@ -59,6 +59,13 @@ mostRecentMonthEntries = do
         Nothing -> return []
         Just mf -> monthFileEntries mf
 
+entriesWithin :: Period -> IO [Entry]
+entriesWithin p = do
+    monthFiles <- fmap (filter isKeeper) allMonthFiles
+    entries <- sequence $ map monthFileEntries monthFiles
+    return $ filter (isWithin p) $ concat entries
+    where isKeeper = overlaps p . period
+
 monthFileEntries :: MonthFile -> IO [Entry]
 monthFileEntries p = do
         now <- getCurrentTime

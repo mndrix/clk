@@ -51,10 +51,3 @@ showFull tz (Entry name time tags msg dur) = intercalate "\t" parts
           userTime = strftime "%FT%T%Q" $ utcToLocalTime tz time
           tagsS    = intercalate "," tags
           durS     = maybe "" show dur
-
-entriesWithin :: Period -> IO [Entry]
-entriesWithin p = do
-    monthFiles <- fmap (filter isKeeper) allMonthFiles
-    entries <- sequence $ map monthFileEntries monthFiles
-    return $ filter (isWithin p) $ concat entries
-    where isKeeper = overlaps p . period
