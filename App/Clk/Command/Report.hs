@@ -58,7 +58,7 @@ inferClient tags =
 
 type Tag = String
 isClientTag :: Tag -> Bool
-isClientTag t = any (t==) ["cokem","gsg","jjgames","ndrix","scs","vgpc"]
+isClientTag t = any (t==) ["cokem","ccmh","gsg","jjgames","ndrix","scs","vgpc"]
 
 showDurationAsHours :: NominalDiffTime -> String
 showDurationAsHours d = printf "%.2f hours" (x/3600)
