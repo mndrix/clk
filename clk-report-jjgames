@@ -2,9 +2,8 @@
 use strict;
 use warnings;
 use List::AllUtils qw( none sum uniq );
-use WWW::Bugzilla3;
 
-my $password = shift || die "Provide your password";
+my $password = '';
 
 my %hours;
 while (<>) {
@@ -27,7 +26,7 @@ my $summary_for = bug_summaries( $password, @bug_ids );
 my @lines;
 for my $msg ( sort keys %hours ) {
     my $out = $msg;
-    $out = "$summary_for->{$1} (bug #$1)" if $msg =~ /^b(\d+)$/;
+    $out = "$summary_for->{$1} ($1)" if $msg =~ /^(gh-\d+)$/;
     push @lines, sprintf("%.1f - $out", $hours{$msg});
 }
 @lines = reverse sort { num($a) <=> num($b) } @lines;
@@ -41,16 +40,6 @@ sub num { $_[0] =~ m/([\d.]+)/ ? $1 : 0 }
 sub bug_summaries {
     my ( $password, @bug_ids ) = @_;
     my %summary_for;
-
-    # login to bugs.ndrix.com
-    my $bz = WWW::Bugzilla3->new( site => 'bugs.ndrix.com' );
-    $bz->login( 'michael@ndrix.com', $password );
-
-    # fetch the bug details for all bugs
-    my @bugs = $bz->get_bugs( uniq @bug_ids );
-    for my $bug (@bugs) {
-        $summary_for{ $bug->{id} } = $bug->{summary};
-    }
 
     return \%summary_for;
 }
