@@ -56,3 +56,17 @@ tween :: ( a -> a -> b ) -> [a] -> [b]
 tween _ [ ] = []
 tween _ [x] = []
 tween f (x:y:xs) = (x `f` y):(tween f (y:xs))
+
+-- returns full path to the infer script if one exists and is executable
+getInferScript :: IO (Maybe FilePath)
+getInferScript = do
+    clkDir <- getClkDir
+    let inferScript = clkDir </> "infer"
+    exists <- doesFileExist inferScript
+    case exists of
+        False -> return Nothing
+        True  -> do
+            canRun <- fmap executable (getPermissions inferScript)
+            case canRun of
+                False -> return Nothing
+                True  -> return $ Just inferScript

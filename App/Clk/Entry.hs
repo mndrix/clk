@@ -2,10 +2,15 @@ module App.Clk.Entry where
 
 import App.Clk.MonthFile
 import App.Clk.Util
+import Control.Concurrent
 import Data.List
+import Data.Maybe
 import Data.Period
+import Data.Ratio
 import Data.Time.Clock
 import Data.Time.LocalTime
+import System.IO
+import System.Process
 
 type Name    = String
 type Tags    = [String]
@@ -24,6 +29,20 @@ instance Read Entry where
               tags = splitTags tagsS
               time = strptime iso8601 timeS
 
+readInfer :: String -> Entry
+readInfer line = Entry "michael@ndrix.org" time tags msg dur
+  where
+    [timeS,durS,tagsS,msg] = split '\t' line
+    time = strptime iso8601 timeS
+    dur  = readDuration durS
+    tags = splitTags tagsS
+
+readDuration :: String -> Duration
+readDuration "" = Nothing
+readDuration s = Just $ fromRational $ ticks % (10^12)
+  where
+    ticks = round $ 10^12 * (read s::Double)
+
 instance Show Entry where
     show (Entry name time tags msg dur) = intercalate "\t" parts
         where parts = [ name, timeS, tagsS, msg ]
@@ -36,6 +55,17 @@ showUser tz (Entry name time tags msg dur) = intercalate "\t" parts
           userTime = strftime "%m/%d %H:%M" $ utcToLocalTime tz time
           tagsS    = intercalate "," tags
           durS     = maybe "" showDur dur
+
+showInfer :: Entry -> String
+showInfer (Entry name time tags msg dur) = intercalate "\t" parts
+  where
+    parts = [ timeS, durS, msgS ]
+    timeS = strftime iso8601 time
+    durS  = init $ show $ fromJust dur  -- 'init' drops trailing 's'
+    tagsS = intercalate " " $ map ('.':) tags
+    msgS  = case tagsS of
+                [] -> msg
+                _  -> intercalate " " [ tagsS, msg ]
 
 showDur :: NominalDiffTime -> String
 showDur dur = case dur of
@@ -63,7 +93,7 @@ entriesWithin :: Period -> IO [Entry]
 entriesWithin p = do
     monthFiles <- fmap (filter isKeeper) allMonthFiles
     entries <- sequence $ map monthFileEntries monthFiles
-    return $ filter (isWithin p) $ concat entries
+    inferEntries $ filter (isWithin p) $ concat entries
     where isKeeper = overlaps p . period
 
 monthFileEntries :: MonthFile -> IO [Entry]
@@ -77,3 +107,19 @@ monthFileEntries p = do
 
 isWithin :: Period -> Entry -> Bool
 isWithin period = within period . time
+
+-- runs the user's infer script against each input Entry
+-- to calculate a final, inferred entry
+inferEntries :: [Entry] -> IO [Entry]
+inferEntries entries = do
+    inferScript <- getInferScript
+    case inferScript of
+        Nothing -> return entries
+        Just script -> do
+            (sIn, sOut, _, _) <- runInteractiveCommand script
+            forkIO $ do
+                sendToInfer sIn entries
+                hClose sIn
+            fmap (map readInfer . lines) $ hGetContents sOut
+  where
+    sendToInfer h = sequence_ . map (hPutStrLn h . showInfer)
