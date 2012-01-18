@@ -9,6 +9,7 @@ import System.FilePath
 import Data.List
 import Data.Maybe
 import Data.Time
+import Data.Period
 import Text.Regex.Posix
 
 getClkDir :: IO String
@@ -70,3 +71,11 @@ getInferScript = do
             case canRun of
                 False -> return Nothing
                 True  -> return $ Just inferScript
+
+-- like parsePeriod but also accepts '.' or '-' where ' ' usually goes
+toPeriod :: String -> IO Period
+toPeriod = parsePeriod . map f
+  where
+    f '.' = ' '
+    f '-' = ' '
+    f  x  =  x

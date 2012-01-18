@@ -1,10 +1,10 @@
 module App.Clk.Command.Report (main) where
 
 import App.Clk.Entry
+import App.Clk.Util
 import Data.List
 import Data.Maybe
 import qualified Data.Map as Map
-import Data.Period
 import Data.Time.Clock
 import Data.Time.LocalTime
 import System.Console.GetOpt
@@ -17,7 +17,7 @@ main args = do
     let periodPhrase = case getOpt Permute options args of
                             ([PeriodArg p], [], []) -> p
                             otherwise               -> "today"
-    period <- parsePeriod periodPhrase
+    period <- toPeriod periodPhrase
 
     let p e = all ($e) [ hasDuration, isClockedIn, isWithin period ]
     entries <- fmap (filter p) $ (entriesWithin period >>= inferEntries)

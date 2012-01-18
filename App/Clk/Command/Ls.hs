@@ -5,7 +5,6 @@ import App.Clk.MonthFile
 import App.Clk.Util
 import Data.List
 import Data.Maybe
-import Data.Period
 import Data.Time.Clock
 import Data.Time.LocalTime
 import System.Console.GetOpt
@@ -21,7 +20,7 @@ options = [ Option ['p'] ["period"] (ReqArg PeriodArg "PERIOD") ""
 
 main args = do
     let ( flags, _, _ ) = getOpt Permute options args
-    period <- parsePeriod $ findPeriodPhrase flags
+    period <- toPeriod $ findPeriodPhrase flags
 
     let formatter = findFormatter flags
 
