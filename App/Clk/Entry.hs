@@ -37,12 +37,6 @@ readInfer line = Entry "michael@ndrix.org" time tags msg dur
     dur  = readDuration durS
     tags = splitTags tagsS
 
-readDuration :: String -> Duration
-readDuration "" = Nothing
-readDuration s = Just $ fromRational $ ticks % (10^12)
-  where
-    ticks = round $ 10^12 * (read s::Double)
-
 instance Show Entry where
     show (Entry name time tags msg dur) = intercalate "\t" parts
         where parts = [ name, timeS, tagsS, msg ]
@@ -54,7 +48,7 @@ showUser tz (Entry name time tags msg dur) = intercalate "\t" parts
     where parts = [ userTime, durS, tagsS, msg ]
           userTime = strftime "%m/%d %H:%M" $ utcToLocalTime tz time
           tagsS    = intercalate "," tags
-          durS     = maybe "" showDur dur
+          durS     = maybe "" showDurationUser dur
 
 showInfer :: Entry -> String
 showInfer (Entry name time tags msg dur) = intercalate "\t" parts
@@ -67,12 +61,22 @@ showInfer (Entry name time tags msg dur) = intercalate "\t" parts
                 [] -> msg
                 _  -> intercalate " " [ tagsS, msg ]
 
-showDur :: NominalDiffTime -> String
-showDur dur = case dur of
-            x | x <       60 -> show (round x) ++ "s"
-              | x <    60*60 -> show (round (x/60)) ++ "m"
-              | x < 24*60*60 -> show (round (x/60/60)) ++ "h"
-              | otherwise    -> show (round (x/24/60/60)) ++ "d"
+-- create a human-readable duration string
+showDurationUser :: NominalDiffTime -> String
+showDurationUser dur =
+    case dur of
+        x | x <       60 -> show (round x) ++ "s"
+          | x <    60*60 -> show (round (x/60)) ++ "m"
+          | x < 24*60*60 -> show (round (x/60/60)) ++ "h"
+          | otherwise    -> show (round (x/24/60/60)) ++ "d"
+
+-- parse a floating point string as a duration
+readDuration :: String -> Duration
+readDuration "" = Nothing
+readDuration s = Just $ fromRational $ ticks % (10^12)
+  where
+    ticks = round $ 10^12 * (read s::Double)
+
 
 setDuration :: Entry -> Entry -> Entry
 setDuration e0 e1 = e0{ dur = Just diffSeconds }
