@@ -13,7 +13,8 @@ main args = do
     tz  <- getCurrentTimeZone
     let (tags,msg) = parseArgs args
     let entry = Entry "michael@ndrix.org" now tags msg Nothing
-    putStrLn $ showUser tz entry
+    [userEntry] <- inferEntries [entry]
+    putStrLn $ showUser tz userEntry
 
     -- save the entry to disk
     clkDir <- getClkDir
