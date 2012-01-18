@@ -23,32 +23,17 @@ data Entry    = Entry { name :: Name
                       , dur  :: Duration
                       }
 
-instance Read Entry where
-    readsPrec _ line = [( Entry name time tags msg Nothing, "" )]
-        where [name,timeS,tagsS,msg] = split '\t' line
-              tags = splitTags tagsS
-              time = strptime iso8601 timeS
-
-readInfer :: String -> Entry
-readInfer line = Entry "michael@ndrix.org" time tags msg dur
-  where
-    [timeS,durS,tagsS,msg] = split '\t' line
-    time = strptime iso8601 timeS
-    dur  = readDuration durS
-    tags = splitTags tagsS
-
 instance Show Entry where
     show (Entry name time tags msg dur) = intercalate "\t" parts
         where parts = [ name, timeS, tagsS, msg ]
               timeS = strftime iso8601 time
               tagsS = intercalate "," tags
 
-showUser :: TimeZone -> Entry -> String
-showUser tz (Entry name time tags msg dur) = intercalate "\t" parts
-    where parts = [ userTime, durS, tagsS, msg ]
-          userTime = strftime "%m/%d %H:%M" $ utcToLocalTime tz time
-          tagsS    = intercalate "," tags
-          durS     = maybe "" showDurationUser dur
+instance Read Entry where
+    readsPrec _ line = [( Entry name time tags msg Nothing, "" )]
+        where [name,timeS,tagsS,msg] = split '\t' line
+              tags = splitTags tagsS
+              time = strptime iso8601 timeS
 
 showInfer :: Entry -> String
 showInfer (Entry name time tags msg dur) = intercalate "\t" parts
@@ -60,6 +45,21 @@ showInfer (Entry name time tags msg dur) = intercalate "\t" parts
     msgS  = case tagsS of
                 [] -> msg
                 _  -> intercalate " " [ tagsS, msg ]
+
+readInfer :: String -> Entry
+readInfer line = Entry "michael@ndrix.org" time tags msg dur
+  where
+    [timeS,durS,tagsS,msg] = split '\t' line
+    time = strptime iso8601 timeS
+    dur  = readDuration durS
+    tags = splitTags tagsS
+
+showUser :: TimeZone -> Entry -> String
+showUser tz (Entry name time tags msg dur) = intercalate "\t" parts
+    where parts = [ userTime, durS, tagsS, msg ]
+          userTime = strftime "%m/%d %H:%M" $ utcToLocalTime tz time
+          tagsS    = intercalate "," tags
+          durS     = maybe "" showDurationUser dur
 
 -- create a human-readable duration string
 showDurationUser :: NominalDiffTime -> String
