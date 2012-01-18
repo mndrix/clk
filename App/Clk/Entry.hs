@@ -21,7 +21,7 @@ data Entry    = Entry { name :: Name
 instance Read Entry where
     readsPrec _ line = [( Entry name time tags msg Nothing, "" )]
         where [name,timeS,tagsS,msg] = split '\t' line
-              tags = split ',' tagsS
+              tags = splitTags tagsS
               time = strptime iso8601 timeS
 
 instance Show Entry where

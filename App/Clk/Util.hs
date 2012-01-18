@@ -22,6 +22,10 @@ split delim s
     | otherwise = token : split delim (tail rest)
     where (token,rest) = span (/=delim) s
 
+splitTags :: String -> [String]
+splitTags "" = []
+splitTags s  = split ',' s
+
 strftime :: FormatTime a => String -> a -> String
 strftime = formatTime defaultTimeLocale
 
