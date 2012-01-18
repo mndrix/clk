@@ -35,6 +35,7 @@ instance Read Entry where
               tags = splitTags tagsS
               time = strptime iso8601 timeS
 
+-- entry string meant for consumption by an infer script
 showInfer :: Entry -> String
 showInfer (Entry name time tags msg dur) = intercalate "\t" parts
   where
@@ -46,6 +47,7 @@ showInfer (Entry name time tags msg dur) = intercalate "\t" parts
                 [] -> msg
                 _  -> intercalate " " [ tagsS, msg ]
 
+-- parse entry strings produced by an infer script
 readInfer :: String -> Entry
 readInfer line = Entry "michael@ndrix.org" time tags msg dur
   where
@@ -54,6 +56,7 @@ readInfer line = Entry "michael@ndrix.org" time tags msg dur
     dur  = readDuration durS
     tags = splitTags tagsS
 
+-- create an entry string meant for human consumption
 showUser :: TimeZone -> Entry -> String
 showUser tz (Entry name time tags msg dur) = intercalate "\t" parts
     where parts = [ userTime, durS, tagsS, msg ]
