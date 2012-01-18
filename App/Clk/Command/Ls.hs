@@ -24,7 +24,7 @@ main args = do
     let formatter = findFormatter flags
 
     tz     <- getCurrentTimeZone
-    entries <- entriesWithin period
+    entries <- entriesWithin period >>= inferEntries
     putStrLn $ intercalate "\n" $ map (formatter tz) $ entries
 
 findPeriodPhrase :: [Flag] -> String

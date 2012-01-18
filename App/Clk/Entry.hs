@@ -106,7 +106,7 @@ entriesWithin :: Period -> IO [Entry]
 entriesWithin p = do
     monthFiles <- fmap (filter isKeeper) allMonthFiles
     entries <- mapM monthFileEntries monthFiles
-    inferEntries $ filter (isWithin p) $ concat entries
+    return $ filter (isWithin p) $ concat entries
     where isKeeper = overlaps p . period
 
 monthFileEntries :: MonthFile -> IO [Entry]
