@@ -118,8 +118,6 @@ inferEntries entries = do
         Just script -> do
             (sIn, sOut, _, _) <- runInteractiveCommand script
             forkIO $ do
-                sendToInfer sIn entries
+                hPutStr sIn $ unlines $ map showInfer entries
                 hClose sIn
-            fmap (map readInfer . lines) $ hGetContents sOut
-  where
-    sendToInfer h = sequence_ . map (hPutStrLn h . showInfer)
+            fmap (map readInfer . lines) (hGetContents sOut)
