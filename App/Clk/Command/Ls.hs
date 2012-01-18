@@ -13,8 +13,10 @@ import System.Environment
 
 data Flag = PeriodArg String -- -p or --period
           | FormatArg String -- --format
+          | RawArg           -- --raw
 options = [ Option ['p'] ["period"] (ReqArg PeriodArg "PERIOD") ""
           , Option [   ] ["format"] (ReqArg FormatArg "FORMAT") ""
+          , Option [   ] ["raw"]    (NoArg  RawArg            ) ""
           ]
 
 main args = do
@@ -24,8 +26,13 @@ main args = do
     let formatter = findFormatter flags
 
     tz     <- getCurrentTimeZone
-    entries <- entriesWithin period >>= inferEntries
+    let infer = if any isRaw flags then return . id else inferEntries
+    entries <- entriesWithin period >>= infer
     putStrLn $ intercalate "\n" $ map (formatter tz) $ entries
+
+isRaw :: Flag -> Bool
+isRaw RawArg = True
+isRaw _      = False
 
 findPeriodPhrase :: [Flag] -> String
 findPeriodPhrase flags =
