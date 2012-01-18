@@ -31,11 +31,13 @@ showStore (Entry name time tags msg dur) = intercalate "\t" parts
     timeS = strftime iso8601 time
     tagsS = intercalate "," tags
 
-instance Read Entry where
-    readsPrec _ line = [( Entry name time tags msg Nothing, "" )]
-        where [name,timeS,tagsS,msg] = split '\t' line
-              tags = splitTags tagsS
-              time = strptime iso8601 timeS
+-- parse an entry string from on-disk storage
+readStore :: String -> Entry
+readStore line = Entry name time tags msg Nothing
+  where
+    [name,timeS,tagsS,msg] = split '\t' line
+    tags = splitTags tagsS
+    time = strptime iso8601 timeS
 
 -- entry string meant for consumption by an infer script
 showInfer :: Entry -> String
@@ -109,7 +111,7 @@ monthFileEntries :: MonthFile -> IO [Entry]
 monthFileEntries p = do
         now <- getCurrentTime
         content <- readFile $ filePath p
-        case map read (lines content) of
+        case map readStore (lines content) of
             []  -> return []
             [x] -> return [ setDurationNow x now ]
             xs  -> return $ (tween setDuration xs) ++ [ setDurationNow (last xs) now ]
