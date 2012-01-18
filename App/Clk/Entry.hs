@@ -45,7 +45,9 @@ showInfer (Entry name time tags msg dur) = intercalate "\t" parts
   where
     parts = [ timeS, durS, msgS ]
     timeS = strftime iso8601 time
-    durS  = init $ show $ fromJust dur  -- 'init' drops trailing 's'
+    durS  = case dur of
+        Nothing -> ""
+        Just d  -> init $ show d -- 'init' drops trailing 's'
     tagsS = unwords $ map ('.':) tags
     msgS  = case tagsS of
                 [] -> msg
