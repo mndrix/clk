@@ -23,11 +23,13 @@ data Entry    = Entry { name :: Name
                       , dur  :: Duration
                       }
 
-instance Show Entry where
-    show (Entry name time tags msg dur) = intercalate "\t" parts
-        where parts = [ name, timeS, tagsS, msg ]
-              timeS = strftime iso8601 time
-              tagsS = intercalate "," tags
+-- create an entry string for on-disk storage
+showStore :: Entry -> String
+showStore (Entry name time tags msg dur) = intercalate "\t" parts
+  where
+    parts = [ name, timeS, tagsS, msg ]
+    timeS = strftime iso8601 time
+    tagsS = intercalate "," tags
 
 instance Read Entry where
     readsPrec _ line = [( Entry name time tags msg Nothing, "" )]

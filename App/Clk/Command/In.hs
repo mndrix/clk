@@ -18,7 +18,7 @@ main args = do
     -- save the entry to disk
     clkDir <- getClkDir
     let file = folder clkDir now
-    appendFile file (show entry ++ "\n")
+    appendFile file (showStore entry ++ "\n")
     return ()
 
 folder :: String -> UTCTime -> String
