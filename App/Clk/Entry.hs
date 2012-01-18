@@ -46,10 +46,10 @@ showInfer (Entry name time tags msg dur) = intercalate "\t" parts
     parts = [ timeS, durS, msgS ]
     timeS = strftime iso8601 time
     durS  = init $ show $ fromJust dur  -- 'init' drops trailing 's'
-    tagsS = intercalate " " $ map ('.':) tags
+    tagsS = unwords $ map ('.':) tags
     msgS  = case tagsS of
                 [] -> msg
-                _  -> intercalate " " [ tagsS, msg ]
+                _  -> unwords [ tagsS, msg ]
 
 -- parse entry strings produced by an infer script
 readInfer :: String -> Entry
@@ -103,7 +103,7 @@ mostRecentMonthEntries = do
 entriesWithin :: Period -> IO [Entry]
 entriesWithin p = do
     monthFiles <- fmap (filter isKeeper) allMonthFiles
-    entries <- sequence $ map monthFileEntries monthFiles
+    entries <- mapM monthFileEntries monthFiles
     inferEntries $ filter (isWithin p) $ concat entries
     where isKeeper = overlaps p . period
 
@@ -114,7 +114,7 @@ monthFileEntries p = do
         case map readStore (lines content) of
             []  -> return []
             [x] -> return [ setDurationNow x now ]
-            xs  -> return $ (tween setDuration xs) ++ [ setDurationNow (last xs) now ]
+            xs  -> return $ tween setDuration xs ++ [ setDurationNow (last xs) now ]
 
 isWithin :: Period -> Entry -> Bool
 isWithin period = within period . time
