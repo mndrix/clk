@@ -1,4 +1,7 @@
+Mercury/
 *.hi
 *.o
 *.exe
 *.swp
+*.err
+*.mh
