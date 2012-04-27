@@ -3,6 +3,7 @@ import qualified App.Clk.Command.In as In
 import qualified App.Clk.Command.Ls as Ls
 import qualified App.Clk.Command.Report as Report
 
+main :: IO ()
 main = do
     args <- getArgs
     case args of

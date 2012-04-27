@@ -4,6 +4,7 @@ module App.Clk.Entry
     , entriesWithin
     , inferEntries
     , isWithin
+    , readStore
     , showStore
     , showUser
     ) where

@@ -2,12 +2,18 @@ module App.Clk.Command.Ls (main) where
 
 import App.Clk.Entry
     ( Entry(..)
-    , entriesWithin
     , inferEntries
     , showUser
     )
+
+import App.Clk.DB
+    ( DbName(Timeline)
+    , entriesWithin
+    , withDB
+    )
 import App.Clk.MonthFile
 import App.Clk.Util
+
 import Data.List
 import Data.Maybe
 import Data.Time.Clock
@@ -31,8 +37,9 @@ main args = do
 
     tz     <- getCurrentTimeZone
     let infer = if any isRaw flags then return . id else inferEntries
-    entries <- entriesWithin period >>= infer
-    putStrLn $ intercalate "\n" $ map (formatter tz) $ entries
+    withDB Timeline $ \db -> do
+        entries <- entriesWithin db period >>= infer
+        putStrLn $ intercalate "\n" $ map (formatter tz) $ entries
 
 isRaw :: Flag -> Bool
 isRaw RawArg = True
