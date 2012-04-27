@@ -7,6 +7,8 @@ module App.Clk.Entry
     , readStore
     , showStore
     , showUser
+    , setDuration
+    , setDurationNow
     ) where
 
 import App.Clk.MonthFile
@@ -96,6 +98,8 @@ readDuration s = Just $ fromRational $ ticks % trillion
     ticks = round $ (fromIntegral trillion) * (read s::Double)
 
 
+-- Returns 'e0' modified with a duration assuming that 'e1' immediately
+-- follows 'e0' in the timeline
 setDuration :: Entry -> Entry -> Entry
 setDuration e0 e1 = e0{ entryDur = Just diffSeconds }
     where diffSeconds = diffUTCTime (entryTime e1) (entryTime e0)

@@ -10,15 +10,18 @@ import App.Clk.Entry
     , isWithin
     , readStore
     , showStore
+    , setDuration
+    , setDurationNow
     )
 import App.Clk.Util
     ( getClkFile
     , iso8601
     , strftime
+    , tween
     )
 import Data.Period (Period(start))
 
-import Data.Time.Clock (UTCTime)
+import Data.Time.Clock (UTCTime, getCurrentTime)
 
 import Database.LevelDB
     ( DB
@@ -55,9 +58,15 @@ addEntry db entry = do
 
 entriesWithin :: DB -> Period -> IO [Entry]
 entriesWithin db p = do
+    now <- getCurrentTime
     withIterator db [] $ \iter -> do
         iterSeek iter (key $ start p)
-        entries <- mapIter iterEntry iter
-        return $ takeWhile (isWithin p) entries
+        (within,without) <- span (isWithin p) `fmap` mapIter iterEntry iter
+        let front = tween setDuration within
+        let final = setDurationNow (last within)
+        return $ case (within,without) of
+                    ([],_) -> []
+                    (_,[]) -> front ++ [final now]
+                    (_,e:_) -> front ++ [final $ entryTime e]
   where
     iterEntry iter = (readStore . B.unpack) `fmap` iterValue iter
