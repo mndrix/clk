@@ -1,14 +1,18 @@
 module App.Clk.Command.In (main) where
 
 import App.Clk.Entry
+    ( Entry(Entry,time)
+    , inferEntries
+    , showStore
+    , showUser
+    )
 import App.Clk.Util (getClkDir, strftime)
 
 import Data.List
-import Data.Time
 import Data.Time.Clock (getCurrentTime)
-import Data.Time.Calendar
-import System.Environment
+import Data.Time.LocalTime (getCurrentTimeZone)
 
+main :: [String] -> IO ()
 main args = do
     -- display an entry line
     now <- getCurrentTime
