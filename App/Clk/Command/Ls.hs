@@ -1,6 +1,11 @@
 module App.Clk.Command.Ls (main) where
 
 import App.Clk.Entry
+    ( Entry(..)
+    , entriesWithin
+    , inferEntries
+    , showUser
+    )
 import App.Clk.MonthFile
 import App.Clk.Util
 import Data.List

@@ -1,7 +1,13 @@
 module App.Clk.Command.Report (main) where
 
 import App.Clk.Entry
-import App.Clk.Util
+    ( Entry(..)
+    , Tags(..)
+    , entriesWithin
+    , inferEntries
+    , isWithin
+    )
+import App.Clk.Util (toPeriod)
 import Data.List
 import Data.Maybe
 import qualified Data.Map as Map

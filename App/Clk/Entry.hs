@@ -1,4 +1,13 @@
-module App.Clk.Entry where
+module App.Clk.Entry
+    ( Entry(..)
+    , Tags(..)
+    , entriesWithin
+    , inferEntries
+    , isWithin
+    , showStore
+    , showUser
+    , time
+    ) where
 
 import App.Clk.MonthFile
 import App.Clk.Util

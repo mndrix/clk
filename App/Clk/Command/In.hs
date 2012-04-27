@@ -1,9 +1,11 @@
 module App.Clk.Command.In (main) where
+
 import App.Clk.Entry
-import App.Clk.Util
+import App.Clk.Util (getClkDir, strftime)
+
 import Data.List
 import Data.Time
-import Data.Time.Clock
+import Data.Time.Clock (getCurrentTime)
 import Data.Time.Calendar
 import System.Environment
 

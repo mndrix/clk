@@ -1,4 +1,16 @@
-module App.Clk.Util where
+module App.Clk.Util
+    ( allMonthFiles
+    , getClkDir
+    , getInferScript
+    , iso8601
+    , mostRecentMonthFile
+    , split
+    , splitTags
+    , strftime
+    , strptime
+    , toPeriod
+    , tween
+    ) where
 
 import App.Clk.MonthFile
 import System.AbsolutePath
@@ -15,7 +27,7 @@ import Text.Regex.Posix
 getClkDir :: IO String
 getClkDir = do
     home <- getEnv "HOME"
-    return $ home ++ "/.clkq/"  -- q avoids collision with older data
+    return $ home ++ "/.clk/"
 
 split :: Char -> String -> [String]
 split delim s
