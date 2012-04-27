@@ -1,19 +1,17 @@
 module App.Clk.Entry
     ( Entry(..)
-    , Tags(..)
+    , Tags
     , entriesWithin
     , inferEntries
     , isWithin
     , showStore
     , showUser
-    , time
     ) where
 
 import App.Clk.MonthFile
 import App.Clk.Util
 import Control.Concurrent
 import Data.List
-import Data.Maybe
 import Data.Period
 import Data.Ratio
 import Data.Time.Clock
@@ -25,16 +23,16 @@ type Name    = String
 type Tags    = [String]
 type Message = String
 type Duration = Maybe NominalDiffTime
-data Entry    = Entry { name :: Name
-                      , time :: UTCTime
-                      , tags :: Tags
-                      , msg  :: Message
-                      , dur  :: Duration
+data Entry    = Entry { entryName :: Name
+                      , entryTime :: UTCTime
+                      , entryTags :: Tags
+                      , entryMsg  :: Message
+                      , entryDur  :: Duration
                       }
 
 -- create an entry string for on-disk storage
 showStore :: Entry -> String
-showStore (Entry name time tags msg dur) = intercalate "\t" parts
+showStore (Entry name time tags msg _) = intercalate "\t" parts
   where
     parts = [ name, timeS, tagsS, msg ]
     timeS = strftime iso8601 time
@@ -50,7 +48,7 @@ readStore line = Entry name time tags msg Nothing
 
 -- entry string meant for consumption by an infer script
 showInfer :: Entry -> String
-showInfer (Entry name time tags msg dur) = intercalate "\t" parts
+showInfer (Entry _ time tags msg dur) = intercalate "\t" parts
   where
     parts = [ timeS, durS, msgS ]
     timeS = strftime iso8601 time
@@ -73,7 +71,7 @@ readInfer line = Entry "michael@ndrix.org" time tags msg dur
 
 -- create an entry string meant for human consumption
 showUser :: TimeZone -> Entry -> String
-showUser tz (Entry name time tags msg dur) = intercalate "\t" parts
+showUser tz (Entry _ time tags msg dur) = intercalate "\t" parts
     where parts = [ userTime, durS, tagsS, msg ]
           userTime = strftime "%m/%d %H:%M" $ utcToLocalTime tz time
           tagsS    = intercalate "," tags
@@ -83,33 +81,27 @@ showUser tz (Entry name time tags msg dur) = intercalate "\t" parts
 showDurationUser :: NominalDiffTime -> String
 showDurationUser dur =
     case dur of
-        x | x <       60 -> show (round x) ++ "s"
-          | x <    60*60 -> show (round (x/60)) ++ "m"
-          | x < 24*60*60 -> show (round (x/60/60)) ++ "h"
-          | otherwise    -> show (round (x/24/60/60)) ++ "d"
+        x | x <       60 -> show (round x :: Integer) ++ "s"
+          | x <    60*60 -> show (round (x/60) :: Integer) ++ "m"
+          | x < 24*60*60 -> show (round (x/60/60) :: Integer) ++ "h"
+          | otherwise    -> show (round (x/24/60/60) :: Integer) ++ "d"
 
 -- parse a floating point string as a duration
 readDuration :: String -> Duration
 readDuration "" = Nothing
-readDuration s = Just $ fromRational $ ticks % (10^12)
+readDuration s = Just $ fromRational $ ticks % trillion
   where
-    ticks = round $ 10^12 * (read s::Double)
+    trillion = (10::Integer)^(12::Integer)
+    ticks = round $ (fromIntegral trillion) * (read s::Double)
 
 
 setDuration :: Entry -> Entry -> Entry
-setDuration e0 e1 = e0{ dur = Just diffSeconds }
-    where diffSeconds = diffUTCTime (time e1) (time e0)
+setDuration e0 e1 = e0{ entryDur = Just diffSeconds }
+    where diffSeconds = diffUTCTime (entryTime e1) (entryTime e0)
 
 setDurationNow :: Entry -> UTCTime -> Entry
-setDurationNow e0 t = e0{ dur = Just diffSeconds }
-    where diffSeconds = diffUTCTime t (time e0)
-
-mostRecentMonthEntries :: IO [Entry]
-mostRecentMonthEntries = do
-    monthFile <- mostRecentMonthFile
-    case monthFile of
-        Nothing -> return []
-        Just mf -> monthFileEntries mf
+setDurationNow e0 t = e0{ entryDur = Just diffSeconds }
+    where diffSeconds = diffUTCTime t (entryTime e0)
 
 entriesWithin :: Period -> IO [Entry]
 entriesWithin p = do
@@ -128,7 +120,7 @@ monthFileEntries p = do
             xs  -> return $ tween setDuration xs ++ [ setDurationNow (last xs) now ]
 
 isWithin :: Period -> Entry -> Bool
-isWithin period = within period . time
+isWithin p = within p . entryTime
 
 -- runs the user's infer script against each input Entry
 -- to calculate a final, inferred entry
@@ -139,7 +131,7 @@ inferEntries entries = do
         Nothing -> return entries
         Just script -> do
             (sIn, sOut, _, _) <- runInteractiveCommand script
-            forkIO $ do
+            _ <- forkIO $ do
                 hPutStr sIn $ unlines $ map showInfer entries
                 hClose sIn
             fmap (map readInfer . lines) (hGetContents sOut)

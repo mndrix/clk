@@ -29,7 +29,7 @@ main args = do
     entries <- fmap (filter p) $ (entriesWithin period >>= inferEntries)
 
 --  putStrLn $ intercalate "\n" $ map show entries
-    let f = \s e -> Map.insertWith (+) (client e) (maybe 0 id $ dur e) s
+    let f = \s e -> Map.insertWith (+) (client e) (maybe 0 id $ entryDur e) s
     let byClient = foldl f Map.empty entries
     let totalDuration = sum $ Map.elems byClient
     let rows = map showResult $ Map.toAscList byClient
@@ -41,17 +41,17 @@ options = [ Option ['p'] ["period"] (ReqArg PeriodArg "PERIOD") ""
           ]
 
 isClockedOut :: Entry -> Bool
-isClockedOut = (=="out") . msg
+isClockedOut = (=="out") . entryMsg
 
 isClockedIn :: Entry -> Bool
 isClockedIn = not . isClockedOut
 
 hasDuration :: Entry -> Bool
-hasDuration = isJust . dur
+hasDuration = isJust . entryDur
 
 type Client = String
 client :: Entry -> Client
-client = fromMaybe "none" . inferClient . tags
+client = fromMaybe "none" . inferClient . entryTags
 
 inferClient :: Tags -> Maybe Client
 inferClient tags =

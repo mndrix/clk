@@ -18,11 +18,9 @@ import System.Directory
 import System.Locale
 import System.Environment
 import System.FilePath
-import Data.List
 import Data.Maybe
 import Data.Time
 import Data.Period
-import Text.Regex.Posix
 
 getClkDir :: IO String
 getClkDir = do
@@ -48,9 +46,6 @@ iso8601 = "%FT%T%QZ"
 strptime :: String -> String -> UTCTime
 strptime = readTime defaultTimeLocale
 
-isMonthFile :: FilePath -> Bool
-isMonthFile p = p =~ "^[0-9]{4}-[0-9]{2}.txt$"
-
 allMonthFiles :: IO [MonthFile]
 allMonthFiles = do
     clkDir   <- getClkDir
@@ -67,7 +62,7 @@ mostRecentMonthFile = do
 
 tween :: ( a -> a -> b ) -> [a] -> [b]
 tween _ [ ] = []
-tween _ [x] = []
+tween _ [_] = []
 tween f (x:y:xs) = (x `f` y):(tween f (y:xs))
 
 -- returns full path to the infer script if one exists and is executable

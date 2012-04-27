@@ -1,7 +1,7 @@
 module App.Clk.Command.In (main) where
 
 import App.Clk.Entry
-    ( Entry(Entry,time)
+    ( Entry(Entry,entryTime)
     , inferEntries
     , showStore
     , showUser
