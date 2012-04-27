@@ -1,6 +1,7 @@
 module App.Clk.Util
     ( allMonthFiles
     , getClkDir
+    , getClkFile
     , getInferScript
     , iso8601
     , mostRecentMonthFile
@@ -26,6 +27,11 @@ getClkDir :: IO String
 getClkDir = do
     home <- getEnv "HOME"
     return $ home ++ "/.clk/"
+
+getClkFile :: String -> IO String
+getClkFile name = do
+    dir <- getClkDir
+    return $ dir ++ name
 
 split :: Char -> String -> [String]
 split delim s
