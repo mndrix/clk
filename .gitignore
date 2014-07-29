@@ -1,7 +1,6 @@
-Mercury/
-*.hi
-*.o
-*.exe
+*~
 *.swp
-*.err
-*.mh
+dev.pl
+
+bin/clk
+doc/
