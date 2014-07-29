@@ -11,8 +11,7 @@
 
 % edit most recent timeline file
 main([edit|_]) :-
-    now_mark(Mark),
-    mark_file(Mark, File),
+    most_recent_file(File),
     getenv('EDITOR', Editor),
     Command =.. [Editor, '+99999', File],
     exec(Command).
@@ -27,8 +26,7 @@ main([in|Words]) :-
 % list marks
 main([ls|_]) :-
     !,
-    now_mark(Mark),
-    mark_file(Mark, File),
+    most_recent_file(File),
     exec(tail(File)).
 
 % clock out
@@ -43,14 +41,6 @@ main([Command|_]) :-
 main(_) :-
     help.
 
-
-%% now_mark(-Mark)
-%
-%  Construct a mark for the current time. Fields other than the time are
-%  left empty.
-now_mark(Mark) :-
-    new_struct(mark, Mark),
-    datetime(Mark, form_time $ now).
 
 
 help :-

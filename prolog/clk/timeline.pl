@@ -1,5 +1,6 @@
 :- module(clk_timeline, [ timeline_append/1
                         , mark_file/2
+                        , most_recent_file/1
                         ]).
 :- use_module(library(sweet)).
 
@@ -19,6 +20,14 @@ timeline_append(Mark) :-
 
     phrase(mark(Mark), Line),
     format(Stream, "~s", [Line]).
+
+
+%% most_recent_file(-File) is det.
+%
+%  True if File is the most recent timeline file.
+most_recent_file(File) :-
+    now_mark(Mark),
+    mark_file(Mark, File).
 
 
 %% mark_file(+Mark, -File:atom) is det.
@@ -43,4 +52,3 @@ timeline_directory(Dir) :-
     format(atom(Dir), "~s/.clkq/timeline", [getenv $ 'HOME']),
     make_directory_path(Dir),
     assert(timeline_dir(Dir)).
-
