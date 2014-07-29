@@ -11,9 +11,7 @@
 
 main([in|Words]) :-
     !,
-    % construct a new mark
-    new_struct(mark, Mark),
-    datetime(Mark, form_time $ now),
+    now_mark(Mark),
     words(Mark, Words),
 
     % append it to the timeline
@@ -26,6 +24,15 @@ main([Command|_]) :-
     help.
 main(_) :-
     help.
+
+
+%% now_mark(-Mark)
+%
+%  Construct a mark for the current time. Fields other than the time are
+%  left empty.
+now_mark(Mark) :-
+    new_struct(mark, Mark),
+    datetime(Mark, form_time $ now).
 
 
 help :-
