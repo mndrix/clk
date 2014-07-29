@@ -1,4 +1,5 @@
-:- module(clk_timeline, [timeline_append/1
+:- module(clk_timeline, [ timeline_append/1
+                        , mark_file/2
                         ]).
 :- use_module(library(sweet)).
 

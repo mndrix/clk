@@ -9,6 +9,14 @@
 :- use my(clk/struct).
 :- use my(clk/timeline).
 
+% edit most recent timeline file
+main([edit|_]) :-
+    now_mark(Mark),
+    mark_file(Mark, File),
+    getenv('EDITOR', Editor),
+    Command =.. [Editor, '+99999', File],
+    exec(Command).
+
 % record a new mark
 main([in|Words]) :-
     !,
