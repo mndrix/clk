@@ -1,6 +1,7 @@
 *~
 *.swp
 dev.pl
+tags
 
 bin/clk
 doc/
