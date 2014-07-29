@@ -24,6 +24,13 @@ main([in|Words]) :-
     words(Mark, Words),
     timeline_append(Mark).
 
+% list marks
+main([ls|_]) :-
+    !,
+    now_mark(Mark),
+    mark_file(Mark, File),
+    exec(tail(File)).
+
 % clock out
 main([out|_]) :-
     main([in, out]).
