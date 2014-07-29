@@ -11,6 +11,10 @@
 %
 %  True if Mark is described by a tab separated line.
 mark(Mark) -->
+    mark_(Mark),
+    !.
+
+mark_(Mark) -->
     % modern format
     { new_struct(mark, Mark) },
     { datetime(Mark, Datetime) },
@@ -19,7 +23,7 @@ mark(Mark) -->
     separator,
     words(Words),
     newline.
-mark(Mark) -->
+mark_(Mark) -->
     % antiquated format
     { new_struct(mark, Mark) },
     { datetime(Mark, Datetime) },
