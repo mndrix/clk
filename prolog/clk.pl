@@ -9,15 +9,18 @@
 :- use my(clk/struct).
 :- use my(clk/timeline).
 
+% record a new mark
 main([in|Words]) :-
     !,
     now_mark(Mark),
     words(Mark, Words),
-
-    % append it to the timeline
     timeline_append(Mark).
+
+% clock out
 main([out|_]) :-
     main([in, out]).
+
+% handle unknown commands
 main([Command|_]) :-
     !,
     format(user_error, "Unknown command: ~s~n", [Command]),
