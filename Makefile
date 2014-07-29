@@ -1,7 +1,5 @@
 .PHONY: all
 
-all: bin/clk
-
-bin/clk: bin/clk.pl
+all:
 	swipl --toplevel=main -o bin/clk -c bin/clk.pl
 
