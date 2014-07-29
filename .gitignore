@@ -1,4 +1,6 @@
 *~
 *.swp
 dev.pl
+
+bin/clk
 doc/
