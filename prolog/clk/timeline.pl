@@ -1,9 +1,11 @@
 :- module(clk_timeline, [ timeline_append/1
+                        , file_time/2
                         , mark_file/2
                         , most_recent_file/1
                         ]).
 :- use_module(library(sweet)).
 
+:- use clpfd -> labeling/2.
 :- use func.
 :- use julian.
 :- use my(dcg).
@@ -22,6 +24,21 @@ timeline_append(Mark) :-
     format(Stream, "~s", [Line]).
 
 
+%% file_time(-File:atom, +Time:datetime) is nondet.
+%
+%  True if Time falls within the timeline File.
+%  If Time is bound, iterates all possible File values
+%  on backtracking from oldest to youngest.
+file_time(File, Time) :-
+    nonvar(Time),
+    form_time(Y-M-_, Time),
+    labeling([leftmost,up], [Y,M]),
+    format_time(atom(Base), "%Y-%m.txt", date(Y,M,1)),
+    timeline_directory(Dir),
+    format(atom(File), "~s/~s", [Dir,Base]),
+    exists_file(File).
+
+
 %% most_recent_file(-File) is det.
 %
 %  True if File is the most recent timeline file.
@@ -34,10 +51,7 @@ most_recent_file(File) :-
 %
 %  True if Mark should be stored in File.
 mark_file(Mark, File) :-
-    form_time(unix(Epoch), datetime $ Mark),
-    format_time(atom(Relative), "%Y-%m.txt", Epoch),
-    timeline_directory(Dir),
-    format(atom(File), "~s/~s", [Dir,Relative]).
+    once(file_time(File, datetime $ Mark)).
 
 
 %% timeline_directory(Directory)
